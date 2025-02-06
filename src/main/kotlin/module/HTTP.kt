@@ -1,4 +1,4 @@
-package com.example
+package com.example.module
 
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod

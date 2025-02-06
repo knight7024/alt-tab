@@ -1,4 +1,4 @@
-package com.example
+package com.example.module
 
 import io.ktor.server.application.Application
 import io.ktor.server.response.respondText
