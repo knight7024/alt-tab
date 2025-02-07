@@ -1,4 +1,4 @@
-package com.example
+package com.example.module
 
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase

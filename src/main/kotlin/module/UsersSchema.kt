@@ -1,4 +1,4 @@
-package com.example
+package com.example.module
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
