@@ -8,6 +8,7 @@ plugins {
     kotlin("jvm") version "2.1.10"
     id("io.ktor.plugin") version "3.0.3"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
+    id("com.google.cloud.tools.jib") version "3.4.4"
 }
 
 group = "com.example"
@@ -44,4 +45,25 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+}
+
+jib {
+    from {
+        image = "eclipse-temurin:17-jre-alpine"
+    }
+    to {
+        image = "knight7024/alt-tab"
+        tags = setOf("latest")
+    }
+    container {
+        format = com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
+        creationTime = "USE_CURRENT_TIMESTAMP"
+        ports = listOf("8080")
+        jvmFlags = listOf(
+            "-server",
+            "-Dfile.encoding=UTF-8",
+            "-Dsun.net.inetaddr.ttl=0",
+            "-Dapp.id=alt-tab"
+        )
+    }
 }
