@@ -6,6 +6,7 @@ import com.example.module.configureRouting
 import com.example.module.configureSecurity
 import com.example.module.configureSerialization
 import io.ktor.server.application.Application
+import io.ktor.server.config.ApplicationConfig
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -18,3 +19,6 @@ fun Application.module() {
     configureDatabases()
     configureRouting()
 }
+
+internal val config = ApplicationConfig("application.conf")
+internal val secretConfig = ApplicationConfig("secrets.conf")
