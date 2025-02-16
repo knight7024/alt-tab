@@ -10,5 +10,10 @@ fun Application.configureRouting() {
         get("/") {
             call.respondText("Hello World!")
         }
+
+        get("/hello") {
+            val email = call.queryParameters["email"]
+            call.respondText("Hello $email!")
+        }
     }
 }
