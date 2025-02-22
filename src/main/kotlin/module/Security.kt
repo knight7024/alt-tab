@@ -5,24 +5,17 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.example.config
 import com.example.secretConfig
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache5.Apache5
 import io.ktor.http.HttpMethod
 import io.ktor.server.application.Application
-import io.ktor.server.auth.OAuthAccessTokenResponse
 import io.ktor.server.auth.OAuthServerSettings
-import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.oauth
 import io.ktor.server.config.tryGetString
-import io.ktor.server.response.respondRedirect
-import io.ktor.server.routing.get
-import io.ktor.server.routing.routing
-import io.ktor.server.sessions.sessions
-import io.ktor.server.sessions.set
 
-fun Application.configureSecurity() {
+internal fun Application.configureSecurity() {
     val jwtAudience = config.tryGetString("jwt.audience")!!
     val jwtDomain = config.tryGetString("jwt.domain")!!
     val jwtRealm = config.tryGetString("jwt.realm")!!
@@ -42,9 +35,10 @@ fun Application.configureSecurity() {
             }
         }
     }
+
     authentication {
         oauth("auth-oauth-google") {
-            urlProvider = { "http://localhost:8080/callback" }
+            urlProvider = { "http://localhost:8080/auth/google" }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "google",
@@ -53,25 +47,13 @@ fun Application.configureSecurity() {
                     requestMethod = HttpMethod.Post,
                     clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
                     clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
-                    defaultScopes = listOf("https://www.googleapis.com/auth/userinfo.profile")
+                    defaultScopes = listOf(
+                        "https://www.googleapis.com/auth/userinfo.profile",
+                        "https://www.googleapis.com/auth/userinfo.email"
+                    )
                 )
             }
-            client = HttpClient(Apache)
-        }
-    }
-    routing {
-        authenticate("auth-oauth-google") {
-            get("login") {
-                call.respondRedirect("/callback")
-            }
-
-            get("/callback") {
-                val principal: OAuthAccessTokenResponse.OAuth2? = call.authentication.principal()
-                call.sessions.set(UserSession(principal?.accessToken.toString()))
-                call.respondRedirect("/hello")
-            }
+            client = HttpClient(Apache5)
         }
     }
 }
-
-class UserSession(accessToken: String)
