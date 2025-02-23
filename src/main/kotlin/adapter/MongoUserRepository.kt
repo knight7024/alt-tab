@@ -7,10 +7,11 @@ import org.bson.Document
 import java.time.Instant
 
 class MongoUserRepository(
-    private val dao: MongoCollection<UserDocument>
+    private val dao: MongoCollection<UserDocument>,
 ) : UserRepository {
     override suspend fun findByUuid(uuid: String): User? =
-        dao.find(UUID(uuid))
+        dao
+            .find(UUID(uuid))
             .firstOrNull()
             ?.toDomain()
 
@@ -21,13 +22,13 @@ class MongoUserRepository(
     private fun User.toDocument() =
         UserDocument(
             uuid = uuid,
-            signedUpAt = signedUpAt.toEpochMilli()
+            signedUpAt = signedUpAt.toEpochMilli(),
         )
 
     private fun UserDocument.toDomain() =
         User(
             uuid = uuid,
-            signedUpAt = Instant.ofEpochMilli(signedUpAt)
+            signedUpAt = Instant.ofEpochMilli(signedUpAt),
         )
 
     private companion object {

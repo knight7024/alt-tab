@@ -8,7 +8,7 @@ data class UserDocument(
     @SerialName(FIELD_UUID)
     val uuid: String,
     @SerialName(FIELD_SIGNED_UP_AT)
-    val signedUpAt: Long
+    val signedUpAt: Long,
 ) {
     companion object {
         const val FIELD_UUID = "uuid"

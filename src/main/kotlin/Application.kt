@@ -15,7 +15,8 @@ import io.ktor.server.config.tryGetString
 import java.time.Clock
 
 fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain.main(args)
+    io.ktor.server.netty.EngineMain
+        .main(args)
 }
 
 internal fun Application.module() {
@@ -31,7 +32,7 @@ internal fun Application.module() {
     configureRouting(
         userEmailRepository = userEmailRepository,
         userRepository = userRepository,
-        clock = clock
+        clock = clock,
     )
 }
 
