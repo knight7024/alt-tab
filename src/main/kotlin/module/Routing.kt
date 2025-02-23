@@ -13,7 +13,7 @@ import java.time.Clock
 internal fun Application.configureRouting(
     userEmailRepository: UserEmailRepository,
     userRepository: UserRepository,
-    clock: Clock
+    clock: Clock,
 ) {
     routing {
         get("/") {
@@ -26,11 +26,12 @@ internal fun Application.configureRouting(
         }
 
         authorization(
-            createOrLogin = CreateOrLogin(
-                userEmailRepository = userEmailRepository,
-                userRepository = userRepository,
-                clock = clock
-            )
+            createOrLogin =
+                CreateOrLogin(
+                    userEmailRepository = userEmailRepository,
+                    userRepository = userRepository,
+                    clock = clock,
+                ),
         )
     }
 }

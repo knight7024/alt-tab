@@ -28,7 +28,7 @@ internal fun Application.configureSecurity() {
                     .require(Algorithm.HMAC256(jwtSecret))
                     .withAudience(jwtAudience)
                     .withIssuer(jwtDomain)
-                    .build()
+                    .build(),
             )
             validate { credential ->
                 if (credential.payload.audience.contains(jwtAudience)) JWTPrincipal(credential.payload) else null
@@ -47,10 +47,11 @@ internal fun Application.configureSecurity() {
                     requestMethod = HttpMethod.Post,
                     clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
                     clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
-                    defaultScopes = listOf(
-                        "https://www.googleapis.com/auth/userinfo.profile",
-                        "https://www.googleapis.com/auth/userinfo.email"
-                    )
+                    defaultScopes =
+                        listOf(
+                            "https://www.googleapis.com/auth/userinfo.profile",
+                            "https://www.googleapis.com/auth/userinfo.email",
+                        ),
                 )
             }
             client = HttpClient(Apache5)

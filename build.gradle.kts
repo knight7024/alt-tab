@@ -56,11 +56,12 @@ jib {
         format = com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
         creationTime = "USE_CURRENT_TIMESTAMP"
         ports = listOf("8080")
-        jvmFlags = listOf(
-            "-server",
-            "-Dfile.encoding=UTF-8",
-            "-Dsun.net.inetaddr.ttl=0",
-            "-Dapp.id=alt-tab"
-        )
+        jvmFlags =
+            listOf(
+                "-server",
+                "-Dfile.encoding=UTF-8",
+                "-Dsun.net.inetaddr.ttl=0",
+                "-Dapp.id=alt-tab",
+            )
     }
 }

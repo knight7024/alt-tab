@@ -9,9 +9,7 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 
-fun Routing.authorization(
-    createOrLogin: CreateOrLogin
-) {
+fun Routing.authorization(createOrLogin: CreateOrLogin) {
     route("/auth") {
         authenticate("auth-oauth-google") {
             get("/google") {

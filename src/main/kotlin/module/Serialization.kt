@@ -12,7 +12,7 @@ internal fun Application.configureSerialization() {
             Json {
                 explicitNulls = false
                 ignoreUnknownKeys = true
-            }
+            },
         )
     }
 }

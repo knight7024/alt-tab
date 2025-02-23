@@ -19,41 +19,45 @@ import kotlinx.serialization.json.Json
 import org.apache.hc.core5.util.TimeValue
 
 class GoogleClient(
-    baseUrl: String
-) : UserEmailRepository, AutoCloseable {
-    private val client = HttpClient(Apache5) {
-        engine {
-            connectTimeout = 2000
-            socketTimeout = 3000
-            connectionRequestTimeout = 5000
-            customizeRequest {
-                setConnectionKeepAlive(TimeValue.ofSeconds(10))
-            }
-        }
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
+    baseUrl: String,
+) : UserEmailRepository,
+    AutoCloseable {
+    private val client =
+        HttpClient(Apache5) {
+            engine {
+                connectTimeout = 2000
+                socketTimeout = 3000
+                connectionRequestTimeout = 5000
+                customizeRequest {
+                    setConnectionKeepAlive(TimeValue.ofSeconds(10))
                 }
-            )
+            }
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        ignoreUnknownKeys = true
+                    },
+                )
+            }
+            install(HttpRequestRetry) {
+                maxRetries = 2
+                retryOnServerErrors()
+                exponentialDelay()
+            }
+            defaultRequest {
+                url(baseUrl)
+                accept(ContentType.Application.Json)
+                charset(Charsets.UTF_8.name)
+            }
+            expectSuccess = true
         }
-        install(HttpRequestRetry) {
-            maxRetries = 2
-            retryOnServerErrors()
-            exponentialDelay()
-        }
-        defaultRequest {
-            url(baseUrl)
-            accept(ContentType.Application.Json)
-            charset(Charsets.UTF_8.name)
-        }
-        expectSuccess = true
-    }
 
     override suspend fun findByAccessToken(accessToken: String): String? {
-        val response: GoogleUserInfo = client.get("v2/userinfo") {
-            bearerAuth(accessToken)
-        }.body()
+        val response: GoogleUserInfo =
+            client
+                .get("v2/userinfo") {
+                    bearerAuth(accessToken)
+                }.body()
 
         return response.email.takeIf { response.verified }
     }
@@ -61,7 +65,7 @@ class GoogleClient(
     @Serializable
     data class GoogleUserInfo(
         val email: String,
-        @SerialName("verified_email") val verified: Boolean
+        @SerialName("verified_email") val verified: Boolean,
     )
 
     override fun close() {
