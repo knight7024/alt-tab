@@ -38,7 +38,7 @@ class GoogleClient(
             )
         }
         install(HttpRequestRetry) {
-            maxRetries = 3
+            maxRetries = 2
             retryOnServerErrors()
             exponentialDelay()
         }
@@ -47,6 +47,7 @@ class GoogleClient(
             accept(ContentType.Application.Json)
             charset(Charsets.UTF_8.name)
         }
+        expectSuccess = true
     }
 
     override suspend fun findByAccessToken(accessToken: String): String? {
