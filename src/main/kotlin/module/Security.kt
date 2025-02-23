@@ -17,7 +17,7 @@ import io.ktor.server.config.tryGetString
 
 internal fun Application.configureSecurity() {
     val jwtAudience = config.tryGetString("jwt.audience")!!
-    val jwtDomain = config.tryGetString("jwt.domain")!!
+    val jwtIssuer = config.tryGetString("jwt.issuer")!!
     val jwtRealm = config.tryGetString("jwt.realm")!!
     val jwtSecret = secretConfig.tryGetString("jwt.secret")!!
     authentication {
@@ -27,7 +27,7 @@ internal fun Application.configureSecurity() {
                 JWT
                     .require(Algorithm.HMAC256(jwtSecret))
                     .withAudience(jwtAudience)
-                    .withIssuer(jwtDomain)
+                    .withIssuer(jwtIssuer)
                     .build(),
             )
             validate { credential ->
