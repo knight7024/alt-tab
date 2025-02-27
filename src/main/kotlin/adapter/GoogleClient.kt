@@ -52,14 +52,15 @@ class GoogleClient(
             expectSuccess = true
         }
 
-    override suspend fun findByAccessToken(accessToken: String): String? {
-        val response: GoogleUserInfo =
+    override suspend fun findByAccessToken(accessToken: String): String {
+        val response =
             client
                 .get("v2/userinfo") {
                     bearerAuth(accessToken)
-                }.body()
+                }.body<GoogleUserInfo>()
+                .also { require(it.verified) }
 
-        return response.email.takeIf { response.verified }
+        return response.email
     }
 
     @Serializable
