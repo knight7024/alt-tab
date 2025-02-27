@@ -2,7 +2,7 @@ package com.example.domain
 
 import java.time.Clock
 
-class CreateOrLogin(
+class ResolveOAuthUser(
     private val userEmailRepository: UserEmailRepository,
     private val userRepository: UserRepository,
     private val clock: Clock,
@@ -10,7 +10,7 @@ class CreateOrLogin(
     suspend fun byGoogle(accessToken: String): User {
         val user =
             userEmailRepository
-                .findByAccessToken(accessToken)!!
+                .findByAccessToken(accessToken)
                 .let {
                     userRepository.findByUuid(it)
                         ?: signUp(it)
