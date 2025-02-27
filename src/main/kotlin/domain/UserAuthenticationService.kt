@@ -2,14 +2,14 @@ package com.example.domain
 
 import java.time.Clock
 
-class ResolveOAuthUser(
-    private val userEmailRepository: UserEmailRepository,
+class UserAuthenticationService(
+    private val googleEmailRepository: UserEmailRepository,
     private val userRepository: UserRepository,
     private val clock: Clock,
 ) {
-    suspend fun byGoogle(accessToken: String): User {
+    suspend fun byGoogleOAuth(accessToken: String): User {
         val user =
-            userEmailRepository
+            googleEmailRepository
                 .findByAccessToken(accessToken)
                 .let {
                     userRepository.findByUuid(it)

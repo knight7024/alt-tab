@@ -1,6 +1,6 @@
 package com.example.module
 
-import com.example.domain.ResolveOAuthUser
+import com.example.domain.UserAuthenticationService
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
 import com.example.route.auth.authorization
@@ -26,9 +26,9 @@ internal fun Application.configureRouting(
         }
 
         authorization(
-            resolveOauthUser =
-                ResolveOAuthUser(
-                    userEmailRepository = userEmailRepository,
+            userAuthenticationService =
+                UserAuthenticationService(
+                    googleEmailRepository = userEmailRepository,
                     userRepository = userRepository,
                     clock = clock,
                 ),
