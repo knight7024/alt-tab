@@ -1,23 +1,19 @@
-package com.example.domain
+package com.example.domain.token
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.config.JwtConfig
 import java.time.Clock
 import java.time.Duration
-import java.util.UUID
 import kotlin.random.Random
 
 class TokenProvider(
     private val jwtConfig: JwtConfig,
     private val clock: Clock,
 ) {
-    fun issueAll(
-        userUuid: String,
-        pairingKey: String = UUID.randomUUID().toString().replace("-", ""),
-    ): Pair<AccessToken, RefreshToken> {
-        val refreshToken = issueRefreshToken(userUuid, pairingKey)
-        val accessToken = issueAccessToken(userUuid, pairingKey)
+    fun issueAll(tokenId: TokenId): Pair<AccessToken, RefreshToken> {
+        val refreshToken = issueRefreshToken(tokenId.userUuid, tokenId.pairingKey)
+        val accessToken = issueAccessToken(tokenId.userUuid, tokenId.pairingKey)
 
         return accessToken to refreshToken
     }

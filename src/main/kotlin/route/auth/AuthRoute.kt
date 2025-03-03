@@ -1,8 +1,9 @@
 package com.example.route.auth
 
-import com.example.domain.TokenProvider
-import com.example.domain.TokenValidator
 import com.example.domain.UserAuthenticationService
+import com.example.domain.token.TokenId
+import com.example.domain.token.TokenProvider
+import com.example.domain.token.TokenValidator
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.OAuthAccessTokenResponse
 import io.ktor.server.auth.authenticate
@@ -26,7 +27,7 @@ fun Routing.authorization(
                 val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()!!
                 val user = userAuthenticationService.byGoogleOAuth(principal.accessToken)
 
-                val (accessToken, refreshToken) = tokenProvider.issueAll(user.uuid)
+                val (accessToken, refreshToken) = tokenProvider.issueAll(TokenId(user.uuid))
                 call.respond(TokenResult(accessToken.value, refreshToken.value))
             }
         }
@@ -39,7 +40,7 @@ fun Routing.authorization(
             .onLeft {
                 when (it) {
                     is TokenValidator.Error.Expired -> {
-                        val (accessToken, refreshToken) = tokenProvider.issueAll(it.userUuid, it.pairingKey)
+                        val (accessToken, refreshToken) = tokenProvider.issueAll(it.tokenId)
                         call.respond(TokenResult(accessToken.value, refreshToken.value))
                     }
 

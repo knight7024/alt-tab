@@ -7,10 +7,10 @@ import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
-import com.example.domain.TokenProvider
-import com.example.domain.TokenValidator
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
+import com.example.domain.token.TokenProvider
+import com.example.domain.token.TokenValidator
 import com.example.module.configureHTTP
 import com.example.module.configureRouting
 import com.example.module.configureSecurity

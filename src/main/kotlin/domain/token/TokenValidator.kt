@@ -1,4 +1,4 @@
-package com.example.domain
+package com.example.domain.token
 
 import arrow.core.Either
 import arrow.core.left
@@ -14,7 +14,7 @@ class TokenValidator(
     fun validate(
         accessToken: String,
         refreshToken: String,
-    ): Either<Error, Pair<String, String>> {
+    ): Either<Error, TokenId> {
         val decodedAccessToken = JWT.decode(accessToken)
         val decodedRefreshToken = JWT.decode(refreshToken)
         if (
@@ -42,11 +42,11 @@ class TokenValidator(
         return runCatching {
             jwtVerifier
                 .verify(decodedAccessToken)
-                .let { it.subject to it.id }
+                .let { TokenId(it.subject, it.id) }
                 .right()
         }.getOrElse {
             when (it) {
-                is TokenExpiredException -> Error.Expired(decodedRefreshToken.subject, decodedRefreshToken.id).left()
+                is TokenExpiredException -> Error.Expired(TokenId(decodedRefreshToken.subject, decodedRefreshToken.id)).left()
                 else -> Error.Invalid.left()
             }
         }
@@ -56,8 +56,7 @@ class TokenValidator(
         data object Unpaired : Error
 
         data class Expired(
-            val userUuid: String,
-            val pairingKey: String,
+            val tokenId: TokenId,
         ) : Error
 
         data object Invalid : Error
