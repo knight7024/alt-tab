@@ -15,7 +15,8 @@ import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.oauth
 
 /**
- * @see com.example.domain.TokenProvider
+ * @see com.example.domain.token.TokenProvider
+ * @see com.example.domain.token.TokenValidator
  */
 internal fun Application.configureSecurity(
     jwtConfig: JwtConfig,

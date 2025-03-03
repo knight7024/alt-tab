@@ -30,20 +30,20 @@ fun Routing.authorization(
                 val user = userAuthorizationService.byGoogleOAuth(principal.accessToken)
 
                 val (accessToken, refreshToken) = tokenProvider.issueAll(TokenId(user.id))
-                call.respond(TokenResult(accessToken.value, refreshToken.value))
+                call.respond(TokenDto(accessToken.value, refreshToken.value))
             }
         }
     }
 
     post("/refresh-tokens") {
-        val tokens = call.receive<RefreshRequestedTokens>()
+        val tokens = call.receive<TokenDto>()
         tokenValidator
             .validate(AccessToken(tokens.accessToken), RefreshToken(tokens.refreshToken))
             .onLeft {
                 when (it) {
                     is TokenValidator.Error.Expired -> {
                         val (accessToken, refreshToken) = tokenProvider.issueAll(it.tokenId)
-                        call.respond(TokenResult(accessToken.value, refreshToken.value))
+                        call.respond(TokenDto(accessToken.value, refreshToken.value))
                     }
 
                     else -> {
@@ -51,19 +51,13 @@ fun Routing.authorization(
                     }
                 }
             }.onRight {
-                call.respond(TokenResult(tokens.accessToken, tokens.refreshToken))
+                call.respond(TokenDto(tokens.accessToken, tokens.refreshToken))
             }
     }
 }
 
 @Serializable
-private data class TokenResult(
-    val accessToken: String,
-    val refreshToken: String,
-)
-
-@Serializable
-private data class RefreshRequestedTokens(
+private data class TokenDto(
     val accessToken: String,
     val refreshToken: String,
 )
