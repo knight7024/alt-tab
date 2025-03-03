@@ -2,22 +2,17 @@ package com.example.module
 
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
-import com.example.domain.user.UserAuthenticationService
-import com.example.domain.user.UserEmailRepository
-import com.example.domain.user.UserRepository
+import com.example.domain.user.UserAuthorizationService
 import com.example.route.auth.authorization
 import io.ktor.server.application.Application
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import java.time.Clock
 
 internal fun Application.configureRouting(
-    userEmailRepository: UserEmailRepository,
-    userRepository: UserRepository,
+    userAuthorizationService: UserAuthorizationService,
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
-    clock: Clock,
 ) {
     routing {
         get("/") {
@@ -25,12 +20,7 @@ internal fun Application.configureRouting(
         }
 
         authorization(
-            userAuthenticationService =
-                UserAuthenticationService(
-                    googleEmailRepository = userEmailRepository,
-                    userRepository = userRepository,
-                    clock = clock,
-                ),
+            userAuthorizationService = userAuthorizationService,
             tokenProvider = tokenProvider,
             tokenValidator = tokenValidator,
         )

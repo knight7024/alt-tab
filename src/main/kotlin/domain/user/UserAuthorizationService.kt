@@ -3,7 +3,7 @@ package com.example.domain.user
 import org.bson.types.ObjectId
 import java.time.Clock
 
-class UserAuthenticationService(
+class UserAuthorizationService(
     private val googleEmailRepository: UserEmailRepository,
     private val userRepository: UserRepository,
     private val clock: Clock,

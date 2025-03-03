@@ -3,7 +3,7 @@ package com.example.route.auth
 import com.example.domain.token.TokenId
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
-import com.example.domain.user.UserAuthenticationService
+import com.example.domain.user.UserAuthorizationService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.OAuthAccessTokenResponse
 import io.ktor.server.auth.authenticate
@@ -17,7 +17,7 @@ import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 
 fun Routing.authorization(
-    userAuthenticationService: UserAuthenticationService,
+    userAuthorizationService: UserAuthorizationService,
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
 ) {
@@ -25,7 +25,7 @@ fun Routing.authorization(
         authenticate("auth-oauth-google") {
             get("/google") {
                 val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()!!
-                val user = userAuthenticationService.byGoogleOAuth(principal.accessToken)
+                val user = userAuthorizationService.byGoogleOAuth(principal.accessToken)
 
                 val (accessToken, refreshToken) = tokenProvider.issueAll(TokenId(user.email))
                 call.respond(TokenResult(accessToken.value, refreshToken.value))

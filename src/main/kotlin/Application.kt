@@ -9,6 +9,7 @@ import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
+import com.example.domain.user.UserAuthorizationService
 import com.example.domain.user.UserEmailRepository
 import com.example.domain.user.UserRepository
 import com.example.module.configureHTTP
@@ -59,6 +60,8 @@ internal fun Application.module() {
     val userRepository: UserRepository = MongoUserRepository(userDao(appConfig.mongoUser))
     val clock = Clock.systemDefaultZone()
 
+    val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository, clock)
+
     val tokenProvider = TokenProvider(appConfig.jwt, clock)
     val tokenValidator = TokenValidator(appConfig.jwt)
 
@@ -70,11 +73,9 @@ internal fun Application.module() {
     configureHTTP()
     configureSerialization()
     configureRouting(
-        userEmailRepository = userEmailRepository,
-        userRepository = userRepository,
+        userAuthorizationService = userAuthorizationService,
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
-        clock = clock,
     )
 }
 
