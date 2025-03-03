@@ -1,8 +1,9 @@
-package com.example.domain
+package com.example.domain.user
 
+import org.bson.types.ObjectId
 import java.time.Clock
 
-class UserAuthenticationService(
+class UserAuthorizationService(
     private val googleEmailRepository: UserEmailRepository,
     private val userRepository: UserRepository,
     private val clock: Clock,
@@ -12,16 +13,17 @@ class UserAuthenticationService(
             googleEmailRepository
                 .findByAccessToken(accessToken)
                 .let {
-                    userRepository.findByUuid(it)
+                    userRepository.findByEmail(it)
                         ?: signUp(it)
                 }
 
         return user
     }
 
-    private suspend fun signUp(uuid: String): User =
+    private suspend fun signUp(email: String): User =
         User(
-            uuid = uuid,
+            id = UserId(ObjectId().toHexString()),
+            email = email,
             signedUpAt = clock.instant(),
         ).also { userRepository.save(it) }
 }

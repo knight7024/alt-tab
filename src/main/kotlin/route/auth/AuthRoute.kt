@@ -1,9 +1,11 @@
 package com.example.route.auth
 
-import com.example.domain.UserAuthenticationService
+import com.example.domain.token.AccessToken
+import com.example.domain.token.RefreshToken
 import com.example.domain.token.TokenId
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
+import com.example.domain.user.UserAuthorizationService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.OAuthAccessTokenResponse
 import io.ktor.server.auth.authenticate
@@ -17,7 +19,7 @@ import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 
 fun Routing.authorization(
-    userAuthenticationService: UserAuthenticationService,
+    userAuthorizationService: UserAuthorizationService,
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
 ) {
@@ -25,9 +27,9 @@ fun Routing.authorization(
         authenticate("auth-oauth-google") {
             get("/google") {
                 val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()!!
-                val user = userAuthenticationService.byGoogleOAuth(principal.accessToken)
+                val user = userAuthorizationService.byGoogleOAuth(principal.accessToken)
 
-                val (accessToken, refreshToken) = tokenProvider.issueAll(TokenId(user.uuid))
+                val (accessToken, refreshToken) = tokenProvider.issueAll(TokenId(user.id))
                 call.respond(TokenResult(accessToken.value, refreshToken.value))
             }
         }
@@ -36,7 +38,7 @@ fun Routing.authorization(
     post("/refresh-tokens") {
         val tokens = call.receive<RefreshRequestedTokens>()
         tokenValidator
-            .validate(tokens.accessToken, tokens.refreshToken)
+            .validate(AccessToken(tokens.accessToken), RefreshToken(tokens.refreshToken))
             .onLeft {
                 when (it) {
                     is TokenValidator.Error.Expired -> {

@@ -3,6 +3,7 @@ package com.example.domain.token
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.config.JwtConfig
+import com.example.domain.user.UserId
 import java.time.Clock
 import java.time.Duration
 import kotlin.random.Random
@@ -12,14 +13,14 @@ class TokenProvider(
     private val clock: Clock,
 ) {
     fun issueAll(tokenId: TokenId): Pair<AccessToken, RefreshToken> {
-        val refreshToken = issueRefreshToken(tokenId.userUuid, tokenId.pairingKey)
-        val accessToken = issueAccessToken(tokenId.userUuid, tokenId.pairingKey)
+        val refreshToken = issueRefreshToken(tokenId.userId, tokenId.pairingKey)
+        val accessToken = issueAccessToken(tokenId.userId, tokenId.pairingKey)
 
         return accessToken to refreshToken
     }
 
     private fun issueRefreshToken(
-        userUuid: String,
+        userId: UserId,
         pairingKey: String,
     ): RefreshToken {
         val issuedAt = clock.instant()
@@ -32,13 +33,13 @@ class TokenProvider(
             .withIssuedAt(issuedAt)
             .withExpiresAt(expiresIn)
             .withJWTId(pairingKey)
-            .withSubject(userUuid)
+            .withSubject(userId.value)
             .sign(Algorithm.HMAC256(jwtConfig.secret))
             .let { RefreshToken(it) }
     }
 
     private fun issueAccessToken(
-        userUuid: String,
+        userId: UserId,
         pairingKey: String,
     ): AccessToken {
         val expiresIn = clock.instant().plus(ACCESS_TOKEN_EXPIRES_IN)
@@ -50,7 +51,7 @@ class TokenProvider(
             .withIssuer(jwtConfig.issuer)
             .withExpiresAt(expiresIn.plus(jitter))
             .withJWTId(pairingKey)
-            .withSubject(userUuid)
+            .withSubject(userId.value)
             .sign(Algorithm.HMAC256(jwtConfig.secret))
             .let { AccessToken(it) }
     }
