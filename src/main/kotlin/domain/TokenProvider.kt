@@ -41,7 +41,7 @@ class TokenProvider(
 
     companion object {
         private val ACCESS_TOKEN_EXPIRES_IN = Duration.ofMinutes(15)
-        private val REFRESH_TOKEN_EXPIRES_IN = Duration.ofHours(3)
+        private val REFRESH_TOKEN_EXPIRES_IN = Duration.ofHours(6)
     }
 }
 
