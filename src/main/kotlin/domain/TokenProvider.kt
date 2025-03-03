@@ -2,14 +2,13 @@ package com.example.domain
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.example.config.JwtConfig
 import java.time.Clock
 import java.time.Duration
 import kotlin.random.Random
 
 class TokenProvider(
-    private val jwtAudience: String,
-    private val jwtIssuer: String,
-    private val jwtSecret: String,
+    private val jwtConfig: JwtConfig,
     private val clock: Clock,
 ) {
     fun issueAccessToken(user: User): AccessToken {
@@ -18,11 +17,11 @@ class TokenProvider(
 
         return JWT
             .create()
-            .withAudience(jwtAudience)
-            .withIssuer(jwtIssuer)
+            .withAudience(jwtConfig.audience)
+            .withIssuer(jwtConfig.issuer)
             .withExpiresAt(expiresIn.plus(jitter))
             .withClaim("uid", user.uuid)
-            .sign(Algorithm.HMAC256(jwtSecret))
+            .sign(Algorithm.HMAC256(jwtConfig.secret))
             .let { AccessToken(it) }
     }
 
@@ -31,11 +30,11 @@ class TokenProvider(
 
         return JWT
             .create()
-            .withAudience(jwtAudience)
-            .withIssuer(jwtIssuer)
+            .withAudience(jwtConfig.audience)
+            .withIssuer(jwtConfig.issuer)
             .withExpiresAt(expiresIn)
             .withClaim("uid", user.uuid)
-            .sign(Algorithm.HMAC256(jwtSecret))
+            .sign(Algorithm.HMAC256(jwtConfig.secret))
             .let { RefreshToken(it) }
     }
 

@@ -2,6 +2,11 @@ package com.example
 
 import com.example.adapter.GoogleClient
 import com.example.adapter.MongoUserRepository
+import com.example.config.AppConfig
+import com.example.config.JwtConfig
+import com.example.config.MongoConfig
+import com.example.config.OAuthConfig
+import com.example.config.UrlConfig
 import com.example.domain.TokenProvider
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
@@ -13,26 +18,53 @@ import com.example.module.userDao
 import io.ktor.server.application.Application
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
+import io.ktor.server.netty.EngineMain
 import java.time.Clock
 
 fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain
+    EngineMain
         .main(args)
 }
 
 internal fun Application.module() {
+    // config
+    val appConfig =
+        AppConfig(
+            jwt =
+                JwtConfig(
+                    audience = config.tryGetString("jwt.audience")!!,
+                    issuer = config.tryGetString("jwt.issuer")!!,
+                    secret = secretConfig.tryGetString("jwt.secret")!!,
+                ),
+            mongoUser =
+                MongoConfig(
+                    uri = secretConfig.tryGetString("mongodb-user.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-user.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-user.collection")!!,
+                ),
+            oAuthGoogle =
+                OAuthConfig(
+                    clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
+                    clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
+                ),
+            googleUrl =
+                UrlConfig(
+                    baseUrl = config.tryGetString("google.baseUrl")!!,
+                ),
+        )
+
     // dependency
-    val userEmailRepository: UserEmailRepository = GoogleClient(config.tryGetString("google.baseUrl")!!)
-    val userRepository: UserRepository = MongoUserRepository(userDao())
+    val userEmailRepository: UserEmailRepository = GoogleClient(appConfig.googleUrl.baseUrl)
+    val userRepository: UserRepository = MongoUserRepository(userDao(appConfig.mongoUser))
     val clock = Clock.systemDefaultZone()
 
-    val jwtAudience = config.tryGetString("jwt.audience")!!
-    val jwtIssuer = config.tryGetString("jwt.issuer")!!
-    val jwtSecret = secretConfig.tryGetString("jwt.secret")!!
-    val tokenProvider = TokenProvider(jwtAudience, jwtIssuer, jwtSecret, clock)
+    val tokenProvider = TokenProvider(appConfig.jwt, clock)
 
     // configure
-    configureSecurity()
+    configureSecurity(
+        jwtConfig = appConfig.jwt,
+        oAuthGoogleConfig = appConfig.oAuthGoogle,
+    )
     configureHTTP()
     configureSerialization()
     configureRouting(
@@ -43,5 +75,5 @@ internal fun Application.module() {
     )
 }
 
-internal val config = ApplicationConfig("application.conf")
-internal val secretConfig = ApplicationConfig("secrets.conf")
+private val config = ApplicationConfig("application.conf")
+private val secretConfig = ApplicationConfig("secrets.conf")

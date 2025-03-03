@@ -2,8 +2,8 @@ package com.example.module
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.example.config
-import com.example.secretConfig
+import com.example.config.JwtConfig
+import com.example.config.OAuthConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache5.Apache5
 import io.ktor.http.HttpMethod
@@ -13,26 +13,29 @@ import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.oauth
-import io.ktor.server.config.tryGetString
 
 /**
  * @see com.example.domain.TokenProvider
  */
-internal fun Application.configureSecurity() {
-    val jwtAudience = config.tryGetString("jwt.audience")!!
-    val jwtIssuer = config.tryGetString("jwt.issuer")!!
-    val jwtSecret = secretConfig.tryGetString("jwt.secret")!!
+internal fun Application.configureSecurity(
+    jwtConfig: JwtConfig,
+    oAuthGoogleConfig: OAuthConfig,
+) {
     authentication {
         jwt("auth-jwt") {
             verifier(
                 JWT
-                    .require(Algorithm.HMAC256(jwtSecret))
-                    .withAudience(jwtAudience)
-                    .withIssuer(jwtIssuer)
+                    .require(Algorithm.HMAC256(jwtConfig.secret))
+                    .withAudience(jwtConfig.audience)
+                    .withIssuer(jwtConfig.issuer)
                     .build(),
             )
             validate { credential ->
-                if (credential.payload.audience.contains(jwtAudience)) JWTPrincipal(credential.payload) else null
+                if (credential.payload.audience.contains(jwtConfig.audience)) {
+                    JWTPrincipal(credential.payload)
+                } else {
+                    null
+                }
             }
         }
     }
@@ -46,8 +49,8 @@ internal fun Application.configureSecurity() {
                     authorizeUrl = "https://accounts.google.com/o/oauth2/auth",
                     accessTokenUrl = "https://accounts.google.com/o/oauth2/token",
                     requestMethod = HttpMethod.Post,
-                    clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
-                    clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
+                    clientId = oAuthGoogleConfig.clientId,
+                    clientSecret = oAuthGoogleConfig.clientSecret,
                     defaultScopes =
                         listOf(
                             "https://www.googleapis.com/auth/userinfo.profile",
