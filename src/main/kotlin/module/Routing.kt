@@ -1,5 +1,6 @@
 package com.example.module
 
+import com.example.domain.TokenProvider
 import com.example.domain.UserAuthenticationService
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
@@ -13,16 +14,12 @@ import java.time.Clock
 internal fun Application.configureRouting(
     userEmailRepository: UserEmailRepository,
     userRepository: UserRepository,
+    tokenProvider: TokenProvider,
     clock: Clock,
 ) {
     routing {
         get("/") {
             call.respondText("Hello World!")
-        }
-
-        get("/hello") {
-            val email = call.queryParameters["email"]
-            call.respondText("Hello $email!")
         }
 
         authorization(
@@ -32,6 +29,7 @@ internal fun Application.configureRouting(
                     userRepository = userRepository,
                     clock = clock,
                 ),
+            tokenProvider = tokenProvider,
         )
     }
 }
