@@ -2,6 +2,7 @@ package com.example
 
 import com.example.adapter.GoogleClient
 import com.example.adapter.MongoUserRepository
+import com.example.domain.TokenProvider
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
 import com.example.module.configureHTTP
@@ -25,6 +26,11 @@ internal fun Application.module() {
     val userRepository: UserRepository = MongoUserRepository(userDao())
     val clock = Clock.systemDefaultZone()
 
+    val jwtAudience = config.tryGetString("jwt.audience")!!
+    val jwtIssuer = config.tryGetString("jwt.issuer")!!
+    val jwtSecret = secretConfig.tryGetString("jwt.secret")!!
+    val tokenProvider = TokenProvider(jwtAudience, jwtIssuer, jwtSecret, clock)
+
     // configure
     configureSecurity()
     configureHTTP()
@@ -32,6 +38,7 @@ internal fun Application.module() {
     configureRouting(
         userEmailRepository = userEmailRepository,
         userRepository = userRepository,
+        tokenProvider = tokenProvider,
         clock = clock,
     )
 }

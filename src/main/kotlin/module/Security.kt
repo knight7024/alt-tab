@@ -15,14 +15,15 @@ import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.oauth
 import io.ktor.server.config.tryGetString
 
+/**
+ * @see com.example.domain.TokenProvider
+ */
 internal fun Application.configureSecurity() {
     val jwtAudience = config.tryGetString("jwt.audience")!!
     val jwtIssuer = config.tryGetString("jwt.issuer")!!
-    val jwtRealm = config.tryGetString("jwt.realm")!!
     val jwtSecret = secretConfig.tryGetString("jwt.secret")!!
     authentication {
-        jwt {
-            realm = jwtRealm
+        jwt("auth-jwt") {
             verifier(
                 JWT
                     .require(Algorithm.HMAC256(jwtSecret))
@@ -38,7 +39,7 @@ internal fun Application.configureSecurity() {
 
     authentication {
         oauth("auth-oauth-google") {
-            urlProvider = { "http://localhost:8080/auth/google" }
+            urlProvider = { "http://localhost:8080/oauth/google" }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "google",
