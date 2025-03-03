@@ -1,6 +1,7 @@
 package com.example.adapter
 
 import com.example.domain.user.User
+import com.example.domain.user.UserId
 import com.example.domain.user.UserRepository
 import com.mongodb.client.MongoCollection
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -26,14 +27,14 @@ class MongoUserRepository(
 
     private fun User.toDocument() =
         UserDocument(
-            id = ObjectId(id),
+            id = ObjectId(id.value),
             email = email,
             signedUpAt = signedUpAt.toEpochMilli(),
         )
 
     private fun UserDocument.toDomain() =
         User(
-            id = id.toHexString(),
+            id = UserId(id.toHexString()),
             email = email,
             signedUpAt = Instant.ofEpochMilli(signedUpAt),
         )

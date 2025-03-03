@@ -27,7 +27,7 @@ fun Routing.authorization(
                 val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()!!
                 val user = userAuthorizationService.byGoogleOAuth(principal.accessToken)
 
-                val (accessToken, refreshToken) = tokenProvider.issueAll(TokenId(user.email))
+                val (accessToken, refreshToken) = tokenProvider.issueAll(TokenId(user.id))
                 call.respond(TokenResult(accessToken.value, refreshToken.value))
             }
         }

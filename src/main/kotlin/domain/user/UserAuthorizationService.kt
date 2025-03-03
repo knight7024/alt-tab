@@ -22,7 +22,7 @@ class UserAuthorizationService(
 
     private suspend fun signUp(email: String): User =
         User(
-            id = ObjectId().toHexString(),
+            id = UserId(ObjectId().toHexString()),
             email = email,
             signedUpAt = clock.instant(),
         ).also { userRepository.save(it) }

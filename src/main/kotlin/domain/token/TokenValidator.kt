@@ -7,6 +7,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.example.config.JwtConfig
+import com.example.domain.user.UserId
 
 class TokenValidator(
     private val jwtConfig: JwtConfig,
@@ -42,12 +43,27 @@ class TokenValidator(
         return runCatching {
             jwtVerifier
                 .verify(decodedAccessToken)
-                .let { TokenId(it.subject, it.id) }
-                .right()
+                .let {
+                    TokenId(
+                        userId = UserId(it.subject),
+                        pairingKey = it.id,
+                    )
+                }.right()
         }.getOrElse {
             when (it) {
-                is TokenExpiredException -> Error.Expired(TokenId(decodedRefreshToken.subject, decodedRefreshToken.id)).left()
-                else -> Error.Invalid.left()
+                is TokenExpiredException -> {
+                    Error
+                        .Expired(
+                            TokenId(
+                                userId = UserId(decodedRefreshToken.subject),
+                                pairingKey = decodedRefreshToken.id,
+                            ),
+                        ).left()
+                }
+
+                else -> {
+                    Error.Invalid.left()
+                }
             }
         }
     }
