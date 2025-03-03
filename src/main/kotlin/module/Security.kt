@@ -2,7 +2,7 @@ package com.example.module
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.example.config
+import com.example.config.JwtConfig
 import com.example.secretConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache5.Apache5
@@ -18,21 +18,22 @@ import io.ktor.server.config.tryGetString
 /**
  * @see com.example.domain.TokenProvider
  */
-internal fun Application.configureSecurity() {
-    val jwtAudience = config.tryGetString("jwt.audience")!!
-    val jwtIssuer = config.tryGetString("jwt.issuer")!!
-    val jwtSecret = secretConfig.tryGetString("jwt.secret")!!
+internal fun Application.configureSecurity(jwtConfig: JwtConfig) {
     authentication {
         jwt("auth-jwt") {
             verifier(
                 JWT
-                    .require(Algorithm.HMAC256(jwtSecret))
-                    .withAudience(jwtAudience)
-                    .withIssuer(jwtIssuer)
+                    .require(Algorithm.HMAC256(jwtConfig.secret))
+                    .withAudience(jwtConfig.audience)
+                    .withIssuer(jwtConfig.issuer)
                     .build(),
             )
             validate { credential ->
-                if (credential.payload.audience.contains(jwtAudience)) JWTPrincipal(credential.payload) else null
+                if (credential.payload.audience.contains(jwtConfig.audience)) {
+                    JWTPrincipal(credential.payload)
+                } else {
+                    null
+                }
             }
         }
     }
