@@ -13,11 +13,11 @@ class TokenProvider(
     private val clock: Clock,
 ) {
     fun issueAll(
-        user: User,
+        userUuid: String,
         pairingKey: String = UUID.randomUUID().toString().replace("-", ""),
     ): Pair<AccessToken, RefreshToken> {
-        val refreshToken = issueRefreshToken(user.uuid, pairingKey)
-        val accessToken = issueAccessToken(user.uuid, pairingKey)
+        val refreshToken = issueRefreshToken(userUuid, pairingKey)
+        val accessToken = issueAccessToken(userUuid, pairingKey)
 
         return accessToken to refreshToken
     }
@@ -26,12 +26,14 @@ class TokenProvider(
         userUuid: String,
         pairingKey: String,
     ): RefreshToken {
-        val expiresIn = clock.instant().plus(REFRESH_TOKEN_EXPIRES_IN)
+        val issuedAt = clock.instant()
+        val expiresIn = issuedAt.plus(REFRESH_TOKEN_EXPIRES_IN)
 
         return JWT
             .create()
             .withAudience(jwtConfig.audience)
             .withIssuer(jwtConfig.issuer)
+            .withIssuedAt(issuedAt)
             .withExpiresAt(expiresIn)
             .withJWTId(pairingKey)
             .withSubject(userUuid)

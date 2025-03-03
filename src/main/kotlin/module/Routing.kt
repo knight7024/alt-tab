@@ -1,6 +1,7 @@
 package com.example.module
 
 import com.example.domain.TokenProvider
+import com.example.domain.TokenValidator
 import com.example.domain.UserAuthenticationService
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
@@ -15,6 +16,7 @@ internal fun Application.configureRouting(
     userEmailRepository: UserEmailRepository,
     userRepository: UserRepository,
     tokenProvider: TokenProvider,
+    tokenValidator: TokenValidator,
     clock: Clock,
 ) {
     routing {
@@ -30,6 +32,7 @@ internal fun Application.configureRouting(
                     clock = clock,
                 ),
             tokenProvider = tokenProvider,
+            tokenValidator = tokenValidator,
         )
     }
 }

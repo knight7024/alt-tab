@@ -8,6 +8,7 @@ import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
 import com.example.domain.TokenProvider
+import com.example.domain.TokenValidator
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
 import com.example.module.configureHTTP
@@ -59,6 +60,7 @@ internal fun Application.module() {
     val clock = Clock.systemDefaultZone()
 
     val tokenProvider = TokenProvider(appConfig.jwt, clock)
+    val tokenValidator = TokenValidator(appConfig.jwt)
 
     // configure
     configureSecurity(
@@ -71,6 +73,7 @@ internal fun Application.module() {
         userEmailRepository = userEmailRepository,
         userRepository = userRepository,
         tokenProvider = tokenProvider,
+        tokenValidator = tokenValidator,
         clock = clock,
     )
 }
