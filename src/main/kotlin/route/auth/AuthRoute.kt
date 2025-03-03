@@ -1,5 +1,7 @@
 package com.example.route.auth
 
+import com.example.domain.token.AccessToken
+import com.example.domain.token.RefreshToken
 import com.example.domain.token.TokenId
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
@@ -36,7 +38,7 @@ fun Routing.authorization(
     post("/refresh-tokens") {
         val tokens = call.receive<RefreshRequestedTokens>()
         tokenValidator
-            .validate(tokens.accessToken, tokens.refreshToken)
+            .validate(AccessToken(tokens.accessToken), RefreshToken(tokens.refreshToken))
             .onLeft {
                 when (it) {
                     is TokenValidator.Error.Expired -> {
