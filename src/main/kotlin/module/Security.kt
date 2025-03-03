@@ -3,7 +3,7 @@ package com.example.module
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.config.JwtConfig
-import com.example.secretConfig
+import com.example.config.OAuthConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache5.Apache5
 import io.ktor.http.HttpMethod
@@ -13,12 +13,14 @@ import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.oauth
-import io.ktor.server.config.tryGetString
 
 /**
  * @see com.example.domain.TokenProvider
  */
-internal fun Application.configureSecurity(jwtConfig: JwtConfig) {
+internal fun Application.configureSecurity(
+    jwtConfig: JwtConfig,
+    oAuthGoogleConfig: OAuthConfig,
+) {
     authentication {
         jwt("auth-jwt") {
             verifier(
@@ -47,8 +49,8 @@ internal fun Application.configureSecurity(jwtConfig: JwtConfig) {
                     authorizeUrl = "https://accounts.google.com/o/oauth2/auth",
                     accessTokenUrl = "https://accounts.google.com/o/oauth2/token",
                     requestMethod = HttpMethod.Post,
-                    clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
-                    clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
+                    clientId = oAuthGoogleConfig.clientId,
+                    clientSecret = oAuthGoogleConfig.clientSecret,
                     defaultScopes =
                         listOf(
                             "https://www.googleapis.com/auth/userinfo.profile",

@@ -5,6 +5,7 @@ import com.example.adapter.MongoUserRepository
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig
+import com.example.config.OAuthConfig
 import com.example.domain.TokenProvider
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
@@ -40,6 +41,11 @@ internal fun Application.module() {
                     database = secretConfig.tryGetString("mongodb-user.database")!!,
                     collection = secretConfig.tryGetString("mongodb-user.collection")!!,
                 ),
+            oAuthGoogle =
+                OAuthConfig(
+                    clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
+                    clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
+                ),
         )
 
     // dependency
@@ -52,6 +58,7 @@ internal fun Application.module() {
     // configure
     configureSecurity(
         jwtConfig = appConfig.jwt,
+        oAuthGoogleConfig = appConfig.oAuthGoogle,
     )
     configureHTTP()
     configureSerialization()
@@ -63,5 +70,5 @@ internal fun Application.module() {
     )
 }
 
-internal val config = ApplicationConfig("application.conf")
-internal val secretConfig = ApplicationConfig("secrets.conf")
+private val config = ApplicationConfig("application.conf")
+private val secretConfig = ApplicationConfig("secrets.conf")
