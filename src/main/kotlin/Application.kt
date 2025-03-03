@@ -4,6 +4,7 @@ import com.example.adapter.GoogleClient
 import com.example.adapter.MongoUserRepository
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
+import com.example.config.MongoConfig
 import com.example.domain.TokenProvider
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
@@ -33,11 +34,17 @@ internal fun Application.module() {
                     issuer = config.tryGetString("jwt.issuer")!!,
                     secret = secretConfig.tryGetString("jwt.secret")!!,
                 ),
+            mongoUser =
+                MongoConfig(
+                    uri = secretConfig.tryGetString("mongodb-user.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-user.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-user.collection")!!,
+                ),
         )
 
     // dependency
     val userEmailRepository: UserEmailRepository = GoogleClient(config.tryGetString("google.baseUrl")!!)
-    val userRepository: UserRepository = MongoUserRepository(userDao())
+    val userRepository: UserRepository = MongoUserRepository(userDao(appConfig.mongoUser))
     val clock = Clock.systemDefaultZone()
 
     val tokenProvider = TokenProvider(appConfig.jwt, clock)
