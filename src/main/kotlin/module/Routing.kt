@@ -1,10 +1,10 @@
 package com.example.module
 
-import com.example.domain.UserAuthenticationService
-import com.example.domain.UserEmailRepository
-import com.example.domain.UserRepository
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
+import com.example.domain.user.UserAuthenticationService
+import com.example.domain.user.UserEmailRepository
+import com.example.domain.user.UserRepository
 import com.example.route.auth.authorization
 import io.ktor.server.application.Application
 import io.ktor.server.response.respondText

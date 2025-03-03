@@ -1,7 +1,7 @@
 package com.example.adapter
 
-import com.example.domain.User
-import com.example.domain.UserRepository
+import com.example.domain.user.User
+import com.example.domain.user.UserRepository
 import com.mongodb.client.MongoCollection
 import org.bson.Document
 import java.time.Instant

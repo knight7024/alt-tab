@@ -1,9 +1,9 @@
 package com.example.route.auth
 
-import com.example.domain.UserAuthenticationService
 import com.example.domain.token.TokenId
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
+import com.example.domain.user.UserAuthenticationService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.OAuthAccessTokenResponse
 import io.ktor.server.auth.authenticate

@@ -1,4 +1,4 @@
-package com.example.domain
+package com.example.domain.user
 
 interface UserRepository {
     suspend fun findByUuid(uuid: String): User?
