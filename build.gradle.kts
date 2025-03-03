@@ -40,6 +40,9 @@ dependencies {
     implementation("org.mongodb:bson-kotlinx:$mongo_version")
     implementation("io.ktor:ktor-server-netty")
     implementation("ch.qos.logback:logback-classic:$logback_version")
+
+    implementation("io.arrow-kt:arrow-core:2.0.1")
+
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }
