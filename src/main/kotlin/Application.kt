@@ -40,9 +40,15 @@ internal fun Application.module() {
                 ),
             mongoUser =
                 MongoConfig(
-                    uri = secretConfig.tryGetString("mongodb-user.uri")!!,
-                    database = secretConfig.tryGetString("mongodb-user.database")!!,
-                    collection = secretConfig.tryGetString("mongodb-user.collection")!!,
+                    uri = secretConfig.tryGetString("mongodb-users.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-users.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-users.collection")!!,
+                ),
+            mongoRefreshTokens =
+                MongoConfig(
+                    uri = secretConfig.tryGetString("mongodb-refresh-tokens.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
                 ),
             oAuthGoogle =
                 OAuthConfig(
