@@ -6,6 +6,7 @@ import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
+import com.example.config.UrlConfig
 import com.example.domain.TokenProvider
 import com.example.domain.UserEmailRepository
 import com.example.domain.UserRepository
@@ -46,10 +47,14 @@ internal fun Application.module() {
                     clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
                     clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
                 ),
+            googleUrl =
+                UrlConfig(
+                    baseUrl = config.tryGetString("google.baseUrl")!!,
+                ),
         )
 
     // dependency
-    val userEmailRepository: UserEmailRepository = GoogleClient(config.tryGetString("google.baseUrl")!!)
+    val userEmailRepository: UserEmailRepository = GoogleClient(appConfig.googleUrl.baseUrl)
     val userRepository: UserRepository = MongoUserRepository(userDao(appConfig.mongoUser))
     val clock = Clock.systemDefaultZone()
 
