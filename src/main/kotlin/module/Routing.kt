@@ -1,5 +1,6 @@
 package com.example.module
 
+import com.example.domain.token.RefreshTokenRepository
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
 import com.example.domain.user.UserAuthorizationService
@@ -13,6 +14,7 @@ internal fun Application.configureRouting(
     userAuthorizationService: UserAuthorizationService,
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
+    refreshTokenRepository: RefreshTokenRepository,
 ) {
     routing {
         get("/") {
@@ -23,6 +25,7 @@ internal fun Application.configureRouting(
             userAuthorizationService = userAuthorizationService,
             tokenProvider = tokenProvider,
             tokenValidator = tokenValidator,
+            refreshTokenRepository = refreshTokenRepository,
         )
     }
 }

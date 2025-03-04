@@ -4,10 +4,10 @@ import com.example.domain.user.User
 import com.example.domain.user.UserId
 import com.example.domain.user.UserRepository
 import com.mongodb.client.MongoCollection
+import com.mongodb.client.model.Filters
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bson.Document
 import org.bson.codecs.kotlinx.ObjectIdSerializer
 import org.bson.types.ObjectId
 import java.time.Instant
@@ -17,8 +17,9 @@ class MongoUserRepository(
 ) : UserRepository {
     override suspend fun findByEmail(email: String): User? =
         dao
-            .find(EMAIL(email))
-            .firstOrNull()
+            .find(
+                Filters.eq(UserDocument.FIELD_EMAIL, email),
+            ).firstOrNull()
             ?.toDomain()
 
     override suspend fun save(user: User) {
@@ -38,10 +39,6 @@ class MongoUserRepository(
             email = email,
             signedUpAt = Instant.ofEpochMilli(signedUpAt),
         )
-
-    private companion object {
-        val EMAIL: (String) -> Document = { Document(UserDocument.FIELD_EMAIL, it) }
-    }
 }
 
 @Serializable

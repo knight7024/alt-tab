@@ -3,7 +3,6 @@ package com.example.domain.token
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.config.JwtConfig
-import com.example.domain.user.UserId
 import java.time.Clock
 import java.time.Duration
 import kotlin.random.Random
@@ -13,61 +12,37 @@ class TokenProvider(
     private val clock: Clock,
 ) {
     fun issueAll(tokenId: TokenId): Pair<AccessToken, RefreshToken> {
-        val refreshToken = issueRefreshToken(tokenId.userId, tokenId.pairingKey)
-        val accessToken = issueAccessToken(tokenId.userId, tokenId.pairingKey)
+        val refreshToken = issueRefreshToken(tokenId)
+        val accessToken = issueAccessToken(tokenId)
 
         return accessToken to refreshToken
     }
 
-    private fun issueRefreshToken(
-        userId: UserId,
-        pairingKey: String,
-    ): RefreshToken {
+    private fun issueRefreshToken(tokenId: TokenId): RefreshToken {
         val issuedAt = clock.instant()
-        val expiresIn = issuedAt.plus(REFRESH_TOKEN_EXPIRES_IN)
+        val expiresIn = issuedAt.plus(RefreshToken.EXPIRES_IN)
 
         return JWT
             .create()
-            .withAudience(jwtConfig.audience)
             .withIssuer(jwtConfig.issuer)
+            .withJWTId(tokenId.pairingKey)
+            .withSubject(tokenId.userId.value)
             .withIssuedAt(issuedAt)
-            .withExpiresAt(expiresIn)
-            .withJWTId(pairingKey)
-            .withSubject(userId.value)
             .sign(Algorithm.HMAC256(jwtConfig.secret))
-            .let { RefreshToken(it) }
+            .let { RefreshToken(it, tokenId, expiresIn) }
     }
 
-    private fun issueAccessToken(
-        userId: UserId,
-        pairingKey: String,
-    ): AccessToken {
-        val expiresIn = clock.instant().plus(ACCESS_TOKEN_EXPIRES_IN)
+    private fun issueAccessToken(tokenId: TokenId): AccessToken {
+        val expiresIn = clock.instant().plus(AccessToken.EXPIRES_IN)
         val jitter = Random.nextLong(1, 60).let { Duration.ofSeconds(it) }
 
         return JWT
             .create()
-            .withAudience(jwtConfig.audience)
             .withIssuer(jwtConfig.issuer)
             .withExpiresAt(expiresIn.plus(jitter))
-            .withJWTId(pairingKey)
-            .withSubject(userId.value)
+            .withJWTId(tokenId.pairingKey)
+            .withSubject(tokenId.userId.value)
             .sign(Algorithm.HMAC256(jwtConfig.secret))
             .let { AccessToken(it) }
     }
-
-    companion object {
-        private val ACCESS_TOKEN_EXPIRES_IN = Duration.ofMinutes(15)
-        private val REFRESH_TOKEN_EXPIRES_IN = Duration.ofHours(6)
-    }
 }
-
-@JvmInline
-value class AccessToken internal constructor(
-    val value: String,
-)
-
-@JvmInline
-value class RefreshToken internal constructor(
-    val value: String,
-)

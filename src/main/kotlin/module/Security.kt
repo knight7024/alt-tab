@@ -15,7 +15,8 @@ import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.oauth
 
 /**
- * @see com.example.domain.TokenProvider
+ * @see com.example.domain.token.TokenProvider
+ * @see com.example.domain.token.TokenValidator
  */
 internal fun Application.configureSecurity(
     jwtConfig: JwtConfig,
@@ -26,16 +27,11 @@ internal fun Application.configureSecurity(
             verifier(
                 JWT
                     .require(Algorithm.HMAC256(jwtConfig.secret))
-                    .withAudience(jwtConfig.audience)
                     .withIssuer(jwtConfig.issuer)
                     .build(),
             )
             validate { credential ->
-                if (credential.payload.audience.contains(jwtConfig.audience)) {
-                    JWTPrincipal(credential.payload)
-                } else {
-                    null
-                }
+                JWTPrincipal(credential.payload)
             }
         }
     }
