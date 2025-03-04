@@ -23,7 +23,6 @@ Here's a list of features included in this project:
 | [Swagger](https://start.ktor.io/p/swagger)                             | Serves Swagger UI for your project                                                 |
 | [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
 | [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
-| [Exposed](https://start.ktor.io/p/exposed)                             | Adds Exposed database to your application                                          |
 | [MongoDB](https://start.ktor.io/p/mongodb)                             | Adds MongoDB database to your application                                          |
 
 ## Building & Running
