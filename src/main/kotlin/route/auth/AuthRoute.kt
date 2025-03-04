@@ -45,11 +45,21 @@ fun Routing.authorization(
             .validate(tokens.accessToken, tokens.refreshToken)
             .onLeft {
                 when (it) {
-                    is TokenValidator.Error.Expired -> {
+                    is TokenValidator.Error.AccessTokenExpired -> {
+                        // 발급보다 먼저 만료시켜야 토큰 탈취에 보다 안전하다.
+                        // 에러가 발생해도 사용성에 문제 없는 편이 낫다.
+                        runCatching {
+                            val stolen = !refreshTokenRepository.invalidateOnce(it.refreshToken)
+                            if (stolen) {
+                                call.respond(HttpStatusCode.Unauthorized)
+                            }
+                        }
+
                         val (accessToken, refreshToken) =
                             tokenProvider
-                                .issueAll(it.tokenId)
+                                .issueAll(it.refreshToken.tokenId)
                                 .also { refreshTokenRepository.save(it.second) }
+
                         call.respond(TokenDto(accessToken.value, refreshToken.value))
                     }
 
@@ -57,8 +67,8 @@ fun Routing.authorization(
                         call.respond(HttpStatusCode.Unauthorized)
                     }
                 }
-            }.onRight {
-                call.respond(TokenDto(tokens.accessToken, tokens.refreshToken))
+            }.onRight { (accessToken, refreshToken) ->
+                call.respond(TokenDto(accessToken.value, refreshToken.value))
             }
     }
 }
