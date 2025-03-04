@@ -33,7 +33,6 @@ internal fun Application.module() {
         AppConfig(
             jwt =
                 JwtConfig(
-                    audience = config.tryGetString("jwt.audience")!!,
                     issuer = config.tryGetString("jwt.issuer")!!,
                     secret = secretConfig.tryGetString("jwt.secret")!!,
                 ),

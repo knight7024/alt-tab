@@ -36,7 +36,6 @@ class TokenValidator(
             val jwtVerifier =
                 JWT
                     .require(Algorithm.HMAC256(jwtConfig.secret))
-                    .withAudience(jwtConfig.audience)
                     .withIssuer(jwtConfig.issuer)
                     .withJWTId(tokenId.pairingKey)
                     .withSubject(tokenId.userId.value)

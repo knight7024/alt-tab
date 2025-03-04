@@ -24,7 +24,6 @@ class TokenProvider(
 
         return JWT
             .create()
-            .withAudience(jwtConfig.audience)
             .withIssuer(jwtConfig.issuer)
             .withJWTId(tokenId.pairingKey)
             .withSubject(tokenId.userId.value)
@@ -39,7 +38,6 @@ class TokenProvider(
 
         return JWT
             .create()
-            .withAudience(jwtConfig.audience)
             .withIssuer(jwtConfig.issuer)
             .withExpiresAt(expiresIn.plus(jitter))
             .withJWTId(tokenId.pairingKey)
