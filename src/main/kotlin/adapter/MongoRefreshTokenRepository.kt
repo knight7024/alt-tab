@@ -15,8 +15,17 @@ class MongoRefreshTokenRepository(
         dao.insertOne(token.toDocument())
     }
 
-    override suspend fun invalidateOnce(token: RefreshToken): Boolean =
-        dao
+    override suspend fun invalidateOnce(token: RefreshToken): Boolean {
+        val saved =
+            dao
+                .find(
+                    Filters.eq(RefreshTokenDocument.FIELD_VALUE, token.value),
+                ).first()
+        if (saved == null) {
+            return true
+        }
+
+        return dao
             .updateOne(
                 Filters.and(
                     Filters.eq(RefreshTokenDocument.FIELD_VALUE, token.value),
@@ -24,6 +33,7 @@ class MongoRefreshTokenRepository(
                 ),
                 Updates.set(RefreshTokenDocument.FIELD_STATUS, "INVALIDATED"),
             ).modifiedCount != 0L
+    }
 
     private fun RefreshToken.toDocument() =
         RefreshTokenDocument(
