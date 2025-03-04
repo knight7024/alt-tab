@@ -20,7 +20,7 @@ class MongoRefreshTokenRepository(
             .updateOne(
                 Filters.and(
                     Filters.eq(RefreshTokenDocument.FIELD_VALUE, token.value),
-                    Filters.ne(RefreshTokenDocument.FIELD_STATUS, null),
+                    Filters.eq(RefreshTokenDocument.FIELD_STATUS, null),
                 ),
                 Updates.set(RefreshTokenDocument.FIELD_STATUS, "INVALIDATED"),
             ).modifiedCount != 0L

@@ -34,7 +34,7 @@ fun Routing.authorization(
                         .issueAll(TokenId(user.id))
                         .also { refreshTokenRepository.save(it.second) }
 
-                call.respond(TokenDto(accessToken.value, refreshToken.value))
+                return@get call.respond(TokenDto(accessToken.value, refreshToken.value))
             }
         }
     }
@@ -51,7 +51,7 @@ fun Routing.authorization(
                         runCatching {
                             val stolen = !refreshTokenRepository.invalidateOnce(it.refreshToken)
                             if (stolen) {
-                                call.respond(HttpStatusCode.Unauthorized)
+                                return@post call.respond(HttpStatusCode.Unauthorized)
                             }
                         }
 
@@ -60,15 +60,15 @@ fun Routing.authorization(
                                 .issueAll(it.refreshToken.tokenId)
                                 .also { refreshTokenRepository.save(it.second) }
 
-                        call.respond(TokenDto(accessToken.value, refreshToken.value))
+                        return@post call.respond(TokenDto(accessToken.value, refreshToken.value))
                     }
 
                     else -> {
-                        call.respond(HttpStatusCode.Unauthorized)
+                        return@post call.respond(HttpStatusCode.Unauthorized)
                     }
                 }
             }.onRight { (accessToken, refreshToken) ->
-                call.respond(TokenDto(accessToken.value, refreshToken.value))
+                return@post call.respond(TokenDto(accessToken.value, refreshToken.value))
             }
     }
 }
