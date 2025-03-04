@@ -9,13 +9,17 @@ import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoCollection
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStopped
+import java.util.concurrent.TimeUnit
 
 internal fun Application.userDao(mongoConfig: MongoConfig): MongoCollection<UserDocument> {
     val mongoClient =
         MongoClientSettings
             .builder()
             .applyConnectionString(ConnectionString(mongoConfig.uri))
-            .build()
+            .applyToConnectionPoolSettings {
+                it.maxWaitTime(5, TimeUnit.SECONDS)
+                it.maxConnectionIdleTime(10, TimeUnit.SECONDS)
+            }.build()
             .let { MongoClients.create(it) }
 
     monitor.subscribe(ApplicationStopped) {
@@ -32,7 +36,10 @@ internal fun Application.refreshTokenDao(mongoConfig: MongoConfig): MongoCollect
         MongoClientSettings
             .builder()
             .applyConnectionString(ConnectionString(mongoConfig.uri))
-            .build()
+            .applyToConnectionPoolSettings {
+                it.maxWaitTime(5, TimeUnit.SECONDS)
+                it.maxConnectionIdleTime(10, TimeUnit.SECONDS)
+            }.build()
             .let { MongoClients.create(it) }
 
     monitor.subscribe(ApplicationStopped) {

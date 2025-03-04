@@ -1,0 +1,26 @@
+services:
+  alt-tab:
+    image: "knight7024/alt-tab:latest"
+    container_name: "alt-tab"
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    networks:
+      - backend
+
+  mongodb:
+    image: "mongodb/mongodb-community-server:8.0.4-ubi9"
+    restart: unless-stopped
+    container_name: "mongodb"
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongodb:/data/db
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
