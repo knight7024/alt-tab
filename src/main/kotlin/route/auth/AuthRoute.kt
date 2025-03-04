@@ -1,7 +1,6 @@
 package com.example.route.auth
 
-import com.example.domain.token.AccessToken
-import com.example.domain.token.RefreshToken
+import com.example.domain.token.RefreshTokenRepository
 import com.example.domain.token.TokenId
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
@@ -22,6 +21,7 @@ fun Routing.authorization(
     userAuthorizationService: UserAuthorizationService,
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
+    refreshTokenRepository: RefreshTokenRepository,
 ) {
     route("/oauth") {
         authenticate("auth-oauth-google") {
@@ -29,7 +29,11 @@ fun Routing.authorization(
                 val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()!!
                 val user = userAuthorizationService.byGoogleOAuth(principal.accessToken)
 
-                val (accessToken, refreshToken) = tokenProvider.issueAll(TokenId(user.id))
+                val (accessToken, refreshToken) =
+                    tokenProvider
+                        .issueAll(TokenId(user.id))
+                        .also { refreshTokenRepository.save(it.second) }
+
                 call.respond(TokenDto(accessToken.value, refreshToken.value))
             }
         }
@@ -38,11 +42,14 @@ fun Routing.authorization(
     post("/refresh-tokens") {
         val tokens = call.receive<TokenDto>()
         tokenValidator
-            .validate(AccessToken(tokens.accessToken), RefreshToken(tokens.refreshToken))
+            .validate(tokens.accessToken, tokens.refreshToken)
             .onLeft {
                 when (it) {
                     is TokenValidator.Error.Expired -> {
-                        val (accessToken, refreshToken) = tokenProvider.issueAll(it.tokenId)
+                        val (accessToken, refreshToken) =
+                            tokenProvider
+                                .issueAll(it.tokenId)
+                                .also { refreshTokenRepository.save(it.second) }
                         call.respond(TokenDto(accessToken.value, refreshToken.value))
                     }
 

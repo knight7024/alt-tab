@@ -13,11 +13,11 @@ class TokenValidator(
     private val jwtConfig: JwtConfig,
 ) {
     fun validate(
-        accessToken: AccessToken,
-        refreshToken: RefreshToken,
+        accessToken: String,
+        refreshToken: String,
     ): Either<Error, TokenId> {
-        val decodedAccessToken = JWT.decode(accessToken.value)
-        val decodedRefreshToken = JWT.decode(refreshToken.value)
+        val decodedAccessToken = JWT.decode(accessToken)
+        val decodedRefreshToken = JWT.decode(refreshToken)
         if (
             decodedAccessToken.id != decodedRefreshToken.id ||
             decodedAccessToken.subject != decodedRefreshToken.subject
