@@ -49,11 +49,11 @@ dependencies {
 
 jib {
     from {
-        image = "eclipse-temurin:17-jre-alpine"
+        image = "eclipse-temurin:21-jre-alpine"
     }
     to {
         image = "knight7024/alt-tab"
-        tags = setOf("latest")
+        tags = setOf("latest", "jre-21")
     }
     container {
         format = com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI

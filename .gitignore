@@ -37,3 +37,6 @@ out/
 
 ### Secrets ###
 src/main/resources/secrets.conf
+
+### Docker ###
+data
