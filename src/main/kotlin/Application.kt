@@ -24,8 +24,7 @@ import io.ktor.server.netty.EngineMain
 import java.time.Clock
 
 fun main(args: Array<String>) {
-    EngineMain
-        .main(args)
+    EngineMain.main(args)
 }
 
 internal fun Application.module() {
@@ -70,7 +69,7 @@ internal fun Application.module() {
 
     val tokenProvider = TokenProvider(appConfig.jwt, clock)
     val tokenValidator = TokenValidator(appConfig.jwt)
-    val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken), clock)
+    val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken))
 
     // configure
     configureSecurity(

@@ -26,7 +26,6 @@ class TokenProvider(
             .create()
             .withAudience(jwtConfig.audience)
             .withIssuer(jwtConfig.issuer)
-            .withIssuedAt(issuedAt)
             .withExpiresAt(expiresIn)
             .withJWTId(tokenId.pairingKey)
             .withSubject(tokenId.userId.value)
