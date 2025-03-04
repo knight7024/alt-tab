@@ -58,7 +58,7 @@ class GoogleClient(
                 .get("v2/userinfo") {
                     bearerAuth(accessToken)
                 }.body<GoogleUserInfo>()
-                .also { require(it.verified) }
+                .also { check(it.verified) }
 
         return response.email
     }
