@@ -68,7 +68,7 @@ internal fun Application.module() {
     val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository, clock)
 
     val tokenProvider = TokenProvider(appConfig.jwt, clock)
-    val tokenValidator = TokenValidator(appConfig.jwt)
+    val tokenValidator = TokenValidator(appConfig.jwt, clock)
     val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken))
 
     // configure

@@ -20,21 +20,21 @@ class TokenProvider(
 
     private fun issueRefreshToken(tokenId: TokenId): RefreshToken {
         val issuedAt = clock.instant()
-        val expiresIn = issuedAt.plus(REFRESH_TOKEN_EXPIRES_IN)
+        val expiresIn = issuedAt.plus(RefreshToken.EXPIRES_IN)
 
         return JWT
             .create()
             .withAudience(jwtConfig.audience)
             .withIssuer(jwtConfig.issuer)
-            .withExpiresAt(expiresIn)
             .withJWTId(tokenId.pairingKey)
             .withSubject(tokenId.userId.value)
+            .withIssuedAt(issuedAt)
             .sign(Algorithm.HMAC256(jwtConfig.secret))
             .let { RefreshToken(it, tokenId, expiresIn) }
     }
 
     private fun issueAccessToken(tokenId: TokenId): AccessToken {
-        val expiresIn = clock.instant().plus(ACCESS_TOKEN_EXPIRES_IN)
+        val expiresIn = clock.instant().plus(AccessToken.EXPIRES_IN)
         val jitter = Random.nextLong(1, 60).let { Duration.ofSeconds(it) }
 
         return JWT
@@ -46,10 +46,5 @@ class TokenProvider(
             .withSubject(tokenId.userId.value)
             .sign(Algorithm.HMAC256(jwtConfig.secret))
             .let { AccessToken(it) }
-    }
-
-    companion object {
-        private val ACCESS_TOKEN_EXPIRES_IN = Duration.ofMinutes(15)
-        private val REFRESH_TOKEN_EXPIRES_IN = Duration.ofHours(6)
     }
 }
