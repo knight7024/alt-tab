@@ -34,7 +34,8 @@ internal fun Application.module() {
             jwt =
                 JwtConfig(
                     issuer = config.tryGetString("jwt.issuer")!!,
-                    secret = secretConfig.tryGetString("jwt.secret")!!,
+                    accessTokenSecret = secretConfig.tryGetString("jwt.access-token-secret")!!,
+                    refreshTokenSecret = secretConfig.tryGetString("jwt.refresh-token-secret")!!,
                 ),
             mongoUser =
                 MongoConfig(

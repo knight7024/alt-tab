@@ -26,7 +26,7 @@ internal fun Application.configureSecurity(
         jwt("auth-jwt") {
             verifier(
                 JWT
-                    .require(Algorithm.HMAC256(jwtConfig.secret))
+                    .require(Algorithm.HMAC256(jwtConfig.accessTokenSecret))
                     .withIssuer(jwtConfig.issuer)
                     .build(),
             )

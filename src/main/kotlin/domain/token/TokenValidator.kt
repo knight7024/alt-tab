@@ -23,7 +23,8 @@ class TokenValidator(
             val decodedRefreshToken = JWT.decode(refreshToken)
             if (
                 decodedAccessToken.id != decodedRefreshToken.id ||
-                decodedAccessToken.subject != decodedRefreshToken.subject
+                decodedAccessToken.subject != decodedRefreshToken.subject ||
+                decodedAccessToken.issuedAt != decodedRefreshToken.issuedAt
             ) {
                 return Error.Unpaired.left()
             }
@@ -33,9 +34,16 @@ class TokenValidator(
                     userId = UserId(decodedRefreshToken.subject),
                     pairingKey = decodedRefreshToken.id,
                 )
-            val jwtVerifier =
+            val accessTokenVerifier =
                 JWT
-                    .require(Algorithm.HMAC256(jwtConfig.secret))
+                    .require(Algorithm.HMAC256(jwtConfig.accessTokenSecret))
+                    .withIssuer(jwtConfig.issuer)
+                    .withJWTId(tokenId.pairingKey)
+                    .withSubject(tokenId.userId.value)
+                    .build()
+            val refreshTokenVerifier =
+                JWT
+                    .require(Algorithm.HMAC256(jwtConfig.refreshTokenSecret))
                     .withIssuer(jwtConfig.issuer)
                     .withJWTId(tokenId.pairingKey)
                     .withSubject(tokenId.userId.value)
@@ -43,7 +51,7 @@ class TokenValidator(
 
             val validRefreshToken =
                 runCatching {
-                    jwtVerifier.verify(decodedRefreshToken)
+                    refreshTokenVerifier.verify(decodedRefreshToken)
                 }.onFailure {
                     return Error.Invalid.left()
                 }.map {
@@ -55,7 +63,7 @@ class TokenValidator(
                 }.getOrThrow()
 
             return catch {
-                jwtVerifier.verify(decodedAccessToken)
+                accessTokenVerifier.verify(decodedAccessToken)
             }.mapLeft {
                 when (it) {
                     is TokenExpiredException -> Error.AccessTokenExpired(validRefreshToken)
