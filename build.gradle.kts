@@ -9,6 +9,7 @@ plugins {
     id("io.ktor.plugin") version "3.0.3"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
     id("com.google.cloud.tools.jib") version "3.4.4"
+    id("java-test-fixtures")
 }
 
 group = "com.example"
