@@ -11,6 +11,6 @@ object RefreshTokenFixtures {
         RefreshToken(
             value = refreshToken,
             tokenId = TokenId(UserId(UUID.randomUUID().toString())),
-            expiresIn = Instant.now() + RefreshToken.EXPIRES_IN
+            expiresIn = Instant.now() + RefreshToken.EXPIRES_IN,
         )
 }

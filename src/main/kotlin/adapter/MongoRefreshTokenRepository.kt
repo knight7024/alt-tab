@@ -21,7 +21,7 @@ class MongoRefreshTokenRepository(
                 .find(
                     Filters.eq(RefreshTokenDocument.FIELD_VALUE, token.value),
                 ).first()
-        if (saved == null) {
+        if (saved == null || saved.status == "INVALIDATED") {
             return true
         }
 

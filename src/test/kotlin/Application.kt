@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.adapter.FakeGoogleClient
+import com.example.adapter.FakeUserEmailRepository
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig
@@ -64,7 +64,7 @@ private fun Application.testModule() {
         )
 
     // dependency
-    val userEmailRepository = FakeGoogleClient()
+    val userEmailRepository = FakeUserEmailRepository()
     val userRepository = FakeUserRepository()
     val clock = Clock.fixed(Instant.now(), ZoneId.systemDefault())
 
@@ -97,13 +97,14 @@ internal fun baseTestApplication(block: suspend ApplicationTestBuilder.(client: 
         application {
             testModule()
         }
-        val client = createClient {
-            install(ContentNegotiation) {
-                json()
+        val client =
+            createClient {
+                install(ContentNegotiation) {
+                    json()
+                }
+                defaultRequest {
+                    contentType(ContentType.Application.Json)
+                }
             }
-            defaultRequest {
-                contentType(ContentType.Application.Json)
-            }
-        }
         block(client)
     }
