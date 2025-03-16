@@ -16,6 +16,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
+import org.jetbrains.annotations.VisibleForTesting
 
 fun Routing.authorization(
     userAuthorizationService: UserAuthorizationService,
@@ -51,6 +52,7 @@ fun Routing.authorization(
                         runCatching {
                             val stolen = !refreshTokenRepository.invalidateOnce(it.refreshToken)
                             if (stolen) {
+                                // TODO: 연관된 모든 토큰 만료시켜야 한다.
                                 return@post call.respond(HttpStatusCode.Unauthorized)
                             }
                         }
@@ -73,8 +75,9 @@ fun Routing.authorization(
     }
 }
 
+@VisibleForTesting
 @Serializable
-private data class TokenDto(
+internal data class TokenDto(
     val accessToken: String,
     val refreshToken: String,
 )

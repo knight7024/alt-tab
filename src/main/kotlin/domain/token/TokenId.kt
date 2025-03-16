@@ -10,7 +10,7 @@ data class TokenId(
     val pairingKey: String = UUID.randomUUID().toString().replace("-", ""),
 )
 
-data class RefreshToken(
+data class RefreshToken internal constructor(
     val value: String,
     val tokenId: TokenId,
     val expiresIn: Instant,
@@ -21,7 +21,7 @@ data class RefreshToken(
 }
 
 @JvmInline
-value class AccessToken(
+value class AccessToken internal constructor(
     val value: String,
 ) {
     companion object {

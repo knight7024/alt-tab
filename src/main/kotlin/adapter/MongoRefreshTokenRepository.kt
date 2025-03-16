@@ -23,6 +23,8 @@ class MongoRefreshTokenRepository(
                 ).first()
         if (saved == null) {
             return true
+        } else if (saved.status != null) {
+            return false
         }
 
         return dao
