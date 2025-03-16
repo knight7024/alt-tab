@@ -3,20 +3,21 @@ package com.example.domain.token
 import com.example.adapter.RefreshTokenDocument
 
 class FakeRefreshTokenRepository : RefreshTokenRepository {
-    private val refreshTokens = mutableSetOf<RefreshTokenDocument>()
+    private val refreshTokens = mutableMapOf<String, RefreshTokenDocument>()
 
     override suspend fun save(token: RefreshToken) {
-        refreshTokens.add(token.toDocument())
+        refreshTokens[token.value] = token.toDocument()
     }
 
     override suspend fun invalidateOnce(token: RefreshToken): Boolean {
-        val saved = refreshTokens.find { it.value == token.value }
-        if (saved == null || saved.status == "INVALIDATED") {
+        val saved = refreshTokens[token.value]
+        if (saved == null) {
             return true
+        } else if (saved.status != null) {
+            return false
         }
 
-        refreshTokens.remove(token.toDocument())
-        refreshTokens.add(saved.copy(status = "INVALIDATED"))
+        refreshTokens[token.value] = saved.copy(status = "INVALIDATED")
 
         return true
     }
