@@ -16,6 +16,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
+import org.jetbrains.annotations.VisibleForTesting
 
 fun Routing.authorization(
     userAuthorizationService: UserAuthorizationService,
@@ -74,6 +75,7 @@ fun Routing.authorization(
     }
 }
 
+@VisibleForTesting
 @Serializable
 internal data class TokenDto(
     val accessToken: String,
