@@ -51,6 +51,7 @@ fun Routing.authorization(
                         runCatching {
                             val stolen = !refreshTokenRepository.invalidateOnce(it.refreshToken)
                             if (stolen) {
+                                // TODO: 연관된 모든 토큰 만료시켜야 한다.
                                 return@post call.respond(HttpStatusCode.Unauthorized)
                             }
                         }

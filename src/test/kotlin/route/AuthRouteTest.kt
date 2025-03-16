@@ -19,6 +19,10 @@ import java.util.UUID
 
 class AuthRouteTest :
     DescribeSpec({
+        afterTest {
+            clock.reset()
+        }
+
         describe("AuthRouteTest") {
             describe("만료되지 않은 액세스 토큰과 리프레시 토큰") {
                 baseTestApplication { client ->
