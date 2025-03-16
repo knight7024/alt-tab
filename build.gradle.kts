@@ -1,7 +1,6 @@
 val kotlin_version: String by project
 val logback_version: String by project
 val mongo_version: String by project
-val mockk_version: String by project
 val kotest_version: String by project
 
 plugins {
@@ -48,7 +47,6 @@ dependencies {
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version") // 안쓰면 제거한다.
-    testImplementation("io.mockk:mockk:${mockk_version}")
     testImplementation("io.kotest:kotest-runner-junit5:$kotest_version")
     testImplementation("io.kotest:kotest-assertions-core:$kotest_version")
 }
