@@ -26,9 +26,6 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
 
 private fun Application.testModule() {
     configureSecurity(
@@ -83,7 +80,7 @@ private val appConfig =
 // dependency
 internal val userEmailRepository = FakeUserEmailRepository()
 internal val userRepository = FakeUserRepository()
-internal val clock: Clock = Clock.fixed(Instant.now(), ZoneId.systemDefault())
+internal val clock = FakeClock()
 
 internal val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository, clock)
 
