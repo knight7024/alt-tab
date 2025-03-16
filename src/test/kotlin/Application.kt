@@ -31,50 +31,6 @@ import java.time.Instant
 import java.time.ZoneId
 
 private fun Application.testModule() {
-    // config
-    val appConfig =
-        AppConfig(
-            jwt =
-                JwtConfig(
-                    issuer = config.tryGetString("jwt.issuer")!!,
-                    accessTokenSecret = secretConfig.tryGetString("jwt.access-token-secret")!!,
-                    refreshTokenSecret = secretConfig.tryGetString("jwt.refresh-token-secret")!!,
-                ),
-            mongoUser =
-                MongoConfig(
-                    uri = secretConfig.tryGetString("mongodb-users.uri")!!,
-                    database = secretConfig.tryGetString("mongodb-users.database")!!,
-                    collection = secretConfig.tryGetString("mongodb-users.collection")!!,
-                ),
-            mongoRefreshToken =
-                MongoConfig(
-                    uri = secretConfig.tryGetString("mongodb-refresh-tokens.uri")!!,
-                    database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
-                    collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
-                ),
-            oAuthGoogle =
-                OAuthConfig(
-                    clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
-                    clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
-                ),
-            googleUrl =
-                UrlConfig(
-                    baseUrl = config.tryGetString("google.baseUrl")!!,
-                ),
-        )
-
-    // dependency
-    val userEmailRepository = FakeUserEmailRepository()
-    val userRepository = FakeUserRepository()
-    val clock = Clock.fixed(Instant.now(), ZoneId.systemDefault())
-
-    val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository, clock)
-
-    val tokenProvider = TokenProvider(appConfig.jwt, clock)
-    val tokenValidator = TokenValidator(appConfig.jwt, clock)
-    val refreshTokenRepository = FakeRefreshTokenRepository()
-
-    // configure
     configureSecurity(
         jwtConfig = appConfig.jwt,
         oAuthGoogleConfig = appConfig.oAuthGoogle,
@@ -91,6 +47,49 @@ private fun Application.testModule() {
 
 private val config = ApplicationConfig("application.conf")
 private val secretConfig = ApplicationConfig("secrets.conf")
+
+// config
+private val appConfig =
+    AppConfig(
+        jwt =
+            JwtConfig(
+                issuer = config.tryGetString("jwt.issuer")!!,
+                accessTokenSecret = secretConfig.tryGetString("jwt.access-token-secret")!!,
+                refreshTokenSecret = secretConfig.tryGetString("jwt.refresh-token-secret")!!,
+            ),
+        mongoUser =
+            MongoConfig(
+                uri = secretConfig.tryGetString("mongodb-users.uri")!!,
+                database = secretConfig.tryGetString("mongodb-users.database")!!,
+                collection = secretConfig.tryGetString("mongodb-users.collection")!!,
+            ),
+        mongoRefreshToken =
+            MongoConfig(
+                uri = secretConfig.tryGetString("mongodb-refresh-tokens.uri")!!,
+                database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
+                collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
+            ),
+        oAuthGoogle =
+            OAuthConfig(
+                clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
+                clientSecret = secretConfig.tryGetString("oauth-google.client-secret")!!,
+            ),
+        googleUrl =
+            UrlConfig(
+                baseUrl = config.tryGetString("google.baseUrl")!!,
+            ),
+    )
+
+// dependency
+internal val userEmailRepository = FakeUserEmailRepository()
+internal val userRepository = FakeUserRepository()
+internal val clock: Clock = Clock.fixed(Instant.now(), ZoneId.systemDefault())
+
+internal val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository, clock)
+
+internal val tokenProvider = TokenProvider(appConfig.jwt, clock)
+internal val tokenValidator = TokenValidator(appConfig.jwt, clock)
+internal val refreshTokenRepository = FakeRefreshTokenRepository()
 
 internal fun baseTestApplication(block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit) =
     testApplication {
