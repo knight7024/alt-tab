@@ -1,6 +1,7 @@
-package com.example.domain.token
+package com.example.adapter
 
-import com.example.adapter.RefreshTokenDocument
+import com.example.domain.token.RefreshToken
+import com.example.domain.token.RefreshTokenRepository
 
 class FakeRefreshTokenRepository : RefreshTokenRepository {
     private val refreshTokens = mutableMapOf<String, RefreshTokenDocument>()
