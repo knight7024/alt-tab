@@ -1,4 +1,4 @@
-package com.example.route.auth
+package com.example.route.extension
 
 import com.example.adapter.MongoBrowserTabInfoRepository
 import io.ktor.server.auth.AuthenticationStrategy

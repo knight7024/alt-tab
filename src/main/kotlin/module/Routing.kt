@@ -6,6 +6,7 @@ import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
 import com.example.domain.user.UserAuthorizationService
 import com.example.route.auth.authorization
+import com.example.route.extension.stashSetting
 import io.ktor.server.application.Application
 import io.ktor.server.auth.AuthenticationStrategy
 import io.ktor.server.auth.authenticate
@@ -39,6 +40,10 @@ internal fun Application.configureRouting(
             tokenProvider = tokenProvider,
             tokenValidator = tokenValidator,
             refreshTokenRepository = refreshTokenRepository,
+        )
+
+        stashSetting(
+            stashSettingRepository = stashSettingRepository,
         )
     }
 }
