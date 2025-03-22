@@ -1,12 +1,10 @@
 package com.example.route.auth
 
 import com.example.baseTestApplication
+import com.example.bootstrapService
 import com.example.clock
 import com.example.domain.token.AccessToken
 import com.example.domain.token.RefreshToken
-import com.example.refreshTokenRepository
-import com.example.tokenProvider
-import domain.token.TokenIdFixtures
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -25,8 +23,7 @@ class AuthRouteTest :
         describe("AuthRouteTest") {
             describe("만료되지 않은 액세스 토큰과 리프레시 토큰") {
                 baseTestApplication { client ->
-                    val tokenId = TokenIdFixtures.dummy()
-                    val (accessToken, refreshToken) = tokenProvider.issueAll(tokenId)
+                    val (_, accessToken, refreshToken) = bootstrapService.signUp()
 
                     val response =
                         client.post("/refresh-tokens") {
@@ -44,8 +41,7 @@ class AuthRouteTest :
             describe("만료된 액세스 토큰과 만료되지 않은 리프레시 토큰") {
                 baseTestApplication { client ->
                     clock.tick(AccessToken.EXPIRES_IN.plusMinutes(1).negated())
-                    val tokenId = TokenIdFixtures.dummy()
-                    val (accessToken, refreshToken) = tokenProvider.issueAll(tokenId)
+                    val (_, accessToken, refreshToken) = bootstrapService.signUp()
                     clock.reset()
 
                     val response =
@@ -63,8 +59,7 @@ class AuthRouteTest :
 
             describe("만료된 액세스 토큰과 만료된 리프레시 토큰") {
                 baseTestApplication { client ->
-                    val tokenId = TokenIdFixtures.dummy()
-                    val (accessToken, refreshToken) = tokenProvider.issueAll(tokenId)
+                    val (_, accessToken, refreshToken) = bootstrapService.signUp()
                     clock.tick(RefreshToken.EXPIRES_IN)
 
                     val response =
@@ -79,9 +74,7 @@ class AuthRouteTest :
             describe("사용자가 정상 토큰으로 갱신 이후 어뷰저가 동일한 토큰으로 재갱신") {
                 baseTestApplication { client ->
                     clock.tick(AccessToken.EXPIRES_IN.plusMinutes(1).negated())
-                    val tokenId = TokenIdFixtures.dummy()
-                    val (accessToken, refreshToken) = tokenProvider.issueAll(tokenId)
-                    refreshTokenRepository.save(refreshToken)
+                    val (_, accessToken, refreshToken) = bootstrapService.signUp()
                     clock.reset()
 
                     val normalUserResponse =
