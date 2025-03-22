@@ -1,17 +1,16 @@
 package com.example.module
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
-import com.example.config.JwtConfig
 import com.example.config.OAuthConfig
+import com.example.domain.token.TokenValidator
+import com.example.domain.user.User
+import com.example.domain.user.UserRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache5.Apache5
 import io.ktor.http.HttpMethod
 import io.ktor.server.application.Application
 import io.ktor.server.auth.OAuthServerSettings
 import io.ktor.server.auth.authentication
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.auth.bearer
 import io.ktor.server.auth.oauth
 
 /**
@@ -19,19 +18,21 @@ import io.ktor.server.auth.oauth
  * @see com.example.domain.token.TokenValidator
  */
 internal fun Application.configureSecurity(
-    jwtConfig: JwtConfig,
     oAuthGoogleConfig: OAuthConfig,
+    tokenValidator: TokenValidator,
+    userRepository: UserRepository,
 ) {
     authentication {
-        jwt("auth-jwt") {
-            verifier(
-                JWT
-                    .require(Algorithm.HMAC256(jwtConfig.accessTokenSecret))
-                    .withIssuer(jwtConfig.issuer)
-                    .build(),
-            )
-            validate { credential ->
-                JWTPrincipal(credential.payload)
+        bearer("auth-bearer") {
+            authenticate { tokenCredential ->
+                val accessToken = tokenCredential.token
+                tokenValidator
+                    .validateAccessToken(accessToken)
+                    .onLeft { return@authenticate null }
+                    .onRight {
+                        val user = userRepository.find(it.tokenId.userId)
+                        return@authenticate user?.let { UserPrincipal(it) }
+                    }
             }
         }
     }
@@ -58,3 +59,7 @@ internal fun Application.configureSecurity(
         }
     }
 }
+
+data class UserPrincipal(
+    val user: User,
+)

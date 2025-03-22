@@ -15,6 +15,13 @@ import java.time.Instant
 class MongoUserRepository(
     private val dao: MongoCollection<UserDocument>,
 ) : UserRepository {
+    override suspend fun find(userId: UserId): User? =
+        dao
+            .find(
+                Filters.eq(UserDocument.FIELD_ID, userId.value),
+            ).firstOrNull()
+            ?.toDomain()
+
     override suspend fun findByEmail(email: String): User? =
         dao
             .find(

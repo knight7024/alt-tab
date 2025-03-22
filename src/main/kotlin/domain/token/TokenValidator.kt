@@ -3,6 +3,7 @@ package com.example.domain.token
 import arrow.core.Either
 import arrow.core.Either.Companion.catch
 import arrow.core.left
+import arrow.core.right
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.TokenExpiredException
@@ -70,8 +71,32 @@ class TokenValidator(
                     else -> Error.Invalid
                 }
             }.map {
-                AccessToken(accessToken) to validRefreshToken
+                AccessToken(accessToken, tokenId) to validRefreshToken
             }
+        }.getOrElse {
+            Error.Invalid.left()
+        }
+
+    fun validateAccessToken(accessToken: String): Either<Error, AccessToken> =
+        runCatching {
+            val decodedAccessToken = JWT.decode(accessToken)
+            val tokenId =
+                TokenId(
+                    userId = UserId(decodedAccessToken.subject),
+                    pairingKey = decodedAccessToken.id,
+                )
+
+            val accessTokenVerifier =
+                JWT
+                    .require(Algorithm.HMAC256(jwtConfig.accessTokenSecret))
+                    .withIssuer(jwtConfig.issuer)
+                    .withJWTId(tokenId.pairingKey)
+                    .withSubject(tokenId.userId.value)
+                    .build()
+
+            accessTokenVerifier.verify(decodedAccessToken)
+
+            return AccessToken(accessToken, tokenId).right()
         }.getOrElse {
             Error.Invalid.left()
         }

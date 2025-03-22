@@ -20,9 +20,9 @@ data class RefreshToken internal constructor(
     }
 }
 
-@JvmInline
-value class AccessToken internal constructor(
+data class AccessToken internal constructor(
     val value: String,
+    val tokenId: TokenId,
 ) {
     companion object {
         internal val EXPIRES_IN = Duration.ofMinutes(15)
