@@ -20,7 +20,7 @@ class MongoBrowserTabInfoRepository(
     private fun BrowserTabInfo.toDocument() =
         BrowserTabInfoDocument(
             id = ObjectId(id),
-            userId = ObjectId(userId.value),
+            userId = userId.value,
             windowId = windowId,
             groupId = groupId,
             tabIndex = tabIndex,
@@ -45,8 +45,7 @@ data class BrowserTabInfoDocument(
     @Serializable(with = ObjectIdSerializer::class)
     val id: ObjectId,
     @SerialName(FIELD_USER_ID)
-    @Serializable(with = ObjectIdSerializer::class)
-    val userId: ObjectId,
+    val userId: String,
     @SerialName(FIELD_WINDOW_ID)
     val windowId: String,
     @SerialName(FIELD_GROUP_ID)
