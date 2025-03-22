@@ -1,4 +1,4 @@
-package com.example.adapter
+package adapter
 
 import com.example.domain.user.UserEmailRepository
 

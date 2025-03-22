@@ -1,9 +1,11 @@
 package com.example
 
-import com.example.adapter.FakeRefreshTokenRepository
-import com.example.adapter.FakeStashSettingRepository
-import com.example.adapter.FakeUserEmailRepository
-import com.example.adapter.FakeUserRepository
+import BootstrapService
+import FakeClock
+import adapter.FakeRefreshTokenRepository
+import adapter.FakeStashSettingRepository
+import adapter.FakeUserEmailRepository
+import adapter.FakeUserRepository
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig
@@ -19,6 +21,7 @@ import com.example.module.configureSerialization
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.bearerAuth
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -104,19 +107,26 @@ internal val tokenProvider = TokenProvider(appConfig.jwt, clock)
 internal val tokenValidator = TokenValidator(appConfig.jwt, clock)
 internal val refreshTokenRepository = FakeRefreshTokenRepository()
 
-internal fun baseTestApplication(block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit) =
-    testApplication {
-        application {
-            testModule()
-        }
-        val client =
-            createClient {
-                install(ContentNegotiation) {
-                    json()
-                }
-                defaultRequest {
-                    contentType(ContentType.Application.Json)
+internal val bootstrapService = BootstrapService(tokenProvider, userRepository, refreshTokenRepository, stashSettingRepository)
+
+internal fun baseTestApplication(
+    accessToken: String? = null,
+    block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit,
+) = testApplication {
+    application {
+        testModule()
+    }
+    val client =
+        createClient {
+            install(ContentNegotiation) {
+                json()
+            }
+            defaultRequest {
+                contentType(ContentType.Application.Json)
+                if (accessToken != null) {
+                    bearerAuth(accessToken)
                 }
             }
-        block(client)
-    }
+        }
+    block(client)
+}
