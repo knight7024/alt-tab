@@ -2,6 +2,7 @@ package com.example.module
 
 import com.example.adapter.BrowserTabInfoDocument
 import com.example.adapter.RefreshTokenDocument
+import com.example.adapter.StashSettingDocument
 import com.example.adapter.UserDocument
 import com.example.config.MongoConfig
 import com.mongodb.ConnectionString
@@ -70,4 +71,24 @@ internal fun Application.browserTabInfoDao(mongoConfig: MongoConfig): MongoColle
     return mongoClient
         .getDatabase(mongoConfig.database)
         .getCollection(mongoConfig.collection, BrowserTabInfoDocument::class.java)
+}
+
+internal fun Application.stashSettingDao(mongoConfig: MongoConfig): MongoCollection<StashSettingDocument> {
+    val mongoClient =
+        MongoClientSettings
+            .builder()
+            .applyConnectionString(ConnectionString(mongoConfig.uri))
+            .applyToConnectionPoolSettings {
+                it.maxWaitTime(5, TimeUnit.SECONDS)
+                it.maxConnectionIdleTime(10, TimeUnit.SECONDS)
+            }.build()
+            .let { MongoClients.create(it) }
+
+    monitor.subscribe(ApplicationStopped) {
+        mongoClient.close()
+    }
+
+    return mongoClient
+        .getDatabase(mongoConfig.database)
+        .getCollection(mongoConfig.collection, StashSettingDocument::class.java)
 }

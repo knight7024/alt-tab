@@ -35,23 +35,23 @@ class MongoStashSettingRepository(
             updateCandidates.add(
                 Updates.set(
                     StashSettingDocument.FIELD_GLOBAL_RULE,
-                    toBe.globalRule
-                )
+                    toBe.globalRule,
+                ),
             )
         }
         if (currentSetting.whitelistUrls != stashSetting.whitelistUrls) {
             updateCandidates.add(
                 Updates.set(
                     StashSettingDocument.FIELD_WHITELIST_URLS,
-                    toBe.whitelistUrls
-                )
+                    toBe.whitelistUrls,
+                ),
             )
         }
 
         dao
             .updateOne(
                 Filters.eq(StashSettingDocument.FIELD_USER_ID, stashSetting.userId.value),
-                Updates.combine(*updateCandidates.toTypedArray())
+                Updates.combine(*updateCandidates.toTypedArray()),
             )
     }
 
@@ -66,7 +66,7 @@ class MongoStashSettingRepository(
         StashSettingDocument(
             userId = userId.value,
             globalRule = globalRule.toDocument(),
-            whitelistUrls = whitelistUrls.mapValues { it.value?.toDocument() }
+            whitelistUrls = whitelistUrls.mapValues { it.value?.toDocument() },
         )
 
     private fun StashRule.toDocument() =
@@ -75,7 +75,7 @@ class MongoStashSettingRepository(
             idleTimeoutInMinutes = idleTimeout.toMinutes().toInt(),
             mutedTabIgnored = mutedTabIgnored,
             containerTabIgnored = containerTabIgnored,
-            pinnedTabAllowed = pinnedTabAllowed
+            pinnedTabAllowed = pinnedTabAllowed,
         )
 
     private fun StashSettingDocument.toDomain() =

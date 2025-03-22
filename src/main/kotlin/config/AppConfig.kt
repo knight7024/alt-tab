@@ -5,6 +5,7 @@ data class AppConfig(
     val mongoUser: MongoConfig,
     val mongoRefreshToken: MongoConfig,
     val mongoBrowserTabInfo: MongoConfig,
+    val mongoStashSetting: MongoConfig,
     val oAuthGoogle: OAuthConfig,
     val googleUrl: UrlConfig,
 )
