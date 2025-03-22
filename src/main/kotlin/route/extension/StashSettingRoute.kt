@@ -11,9 +11,10 @@ import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
-import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
+import org.jetbrains.annotations.VisibleForTesting
 import java.time.Duration
 
 fun Routing.stashSetting(stashSettingRepository: StashSettingRepository) {
@@ -23,10 +24,10 @@ fun Routing.stashSetting(stashSettingRepository: StashSettingRepository) {
                 val user = call.authenticatedUser()
                 val stashSetting = stashSettingRepository.find(user.id)
 
-                return@get call.respond(HttpStatusCode.OK, stashSetting)
+                return@get call.respond(HttpStatusCode.OK, stashSetting.toDto())
             }
 
-            post("/update") {
+            put("/update") {
                 val user = call.authenticatedUser()
                 val toBeSetting = call.receive<StashSettingDto>()
 
@@ -38,11 +39,28 @@ fun Routing.stashSetting(stashSettingRepository: StashSettingRepository) {
                     ),
                 )
 
-                return@post call.respond(HttpStatusCode.OK)
+                return@put call.respond(HttpStatusCode.OK)
             }
         }
     }
 }
+
+@VisibleForTesting
+internal fun StashSetting.toDto() =
+    StashSettingDto(
+        globalRule = globalRule.toDto(),
+        whitelistUrls = whitelistUrls.mapValues { it.value?.toDto() },
+    )
+
+@VisibleForTesting
+internal fun StashRule.toDto() =
+    StashSettingDto.StashRule(
+        idleCondition = idleCondition,
+        idleTimeout = idleTimeout.toMinutes().toInt(),
+        mutedTabIgnored = mutedTabIgnored,
+        containerTabIgnored = containerTabIgnored,
+        pinnedTabAllowed = pinnedTabAllowed,
+    )
 
 private fun StashSettingDto.StashRule.toDomain() =
     StashRule(
@@ -53,8 +71,9 @@ private fun StashSettingDto.StashRule.toDomain() =
         pinnedTabAllowed = pinnedTabAllowed,
     )
 
+@VisibleForTesting
 @Serializable
-private data class StashSettingDto(
+internal data class StashSettingDto(
     val globalRule: StashRule,
     val whitelistUrls: Map<String, StashRule?>,
 ) {
