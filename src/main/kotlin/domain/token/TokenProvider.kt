@@ -51,6 +51,6 @@ class TokenProvider(
             .withJWTId(tokenId.pairingKey)
             .withSubject(tokenId.userId.value)
             .sign(Algorithm.HMAC256(jwtConfig.accessTokenSecret))
-            .let { AccessToken(it) }
+            .let { AccessToken(it, tokenId) }
     }
 }

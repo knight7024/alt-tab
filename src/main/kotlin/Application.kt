@@ -73,8 +73,9 @@ internal fun Application.module() {
 
     // configure
     configureSecurity(
-        jwtConfig = appConfig.jwt,
         oAuthGoogleConfig = appConfig.oAuthGoogle,
+        tokenValidator = tokenValidator,
+        userRepository = userRepository,
     )
     configureHTTP()
     configureSerialization()

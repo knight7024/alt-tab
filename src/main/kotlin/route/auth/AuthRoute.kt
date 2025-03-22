@@ -81,8 +81,3 @@ internal data class TokenDto(
     val accessToken: String,
     val refreshToken: String,
 )
-
-fun Routing.authentication() {
-    authenticate("auth-jwt") {
-    }
-}
