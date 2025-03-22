@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    retry: 2
 
     steps:
       - name: Checkout repository
