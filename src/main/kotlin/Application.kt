@@ -61,11 +61,11 @@ internal fun Application.module() {
         )
 
     // dependency
-    val userEmailRepository = GoogleClient(appConfig.googleUrl.baseUrl)
-    val userRepository = MongoUserRepository(userDao(appConfig.mongoUser))
     val clock = Clock.systemDefaultZone()
+    val userEmailRepository = GoogleClient(appConfig.googleUrl.baseUrl)
+    val userRepository = MongoUserRepository(userDao(appConfig.mongoUser), clock)
 
-    val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository, clock)
+    val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository)
 
     val tokenProvider = TokenProvider(appConfig.jwt, clock)
     val tokenValidator = TokenValidator(appConfig.jwt, clock)

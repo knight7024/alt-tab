@@ -10,6 +10,7 @@ data class TokenId(
     val pairingKey: String = UUID.randomUUID().toString().replace("-", ""),
 )
 
+@ConsistentCopyVisibility
 data class RefreshToken internal constructor(
     val value: String,
     val tokenId: TokenId,
@@ -20,6 +21,7 @@ data class RefreshToken internal constructor(
     }
 }
 
+@ConsistentCopyVisibility
 data class AccessToken internal constructor(
     val value: String,
     val tokenId: TokenId,

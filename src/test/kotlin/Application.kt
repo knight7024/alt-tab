@@ -29,8 +29,9 @@ import io.ktor.server.testing.testApplication
 
 private fun Application.testModule() {
     configureSecurity(
-        jwtConfig = appConfig.jwt,
         oAuthGoogleConfig = appConfig.oAuthGoogle,
+        tokenValidator = tokenValidator,
+        userRepository = userRepository,
     )
     configureHTTP()
     configureSerialization()
@@ -78,11 +79,11 @@ private val appConfig =
     )
 
 // dependency
-internal val userEmailRepository = FakeUserEmailRepository()
-internal val userRepository = FakeUserRepository()
 internal val clock = FakeClock()
+internal val userEmailRepository = FakeUserEmailRepository()
+internal val userRepository = FakeUserRepository(clock)
 
-internal val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository, clock)
+internal val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository)
 
 internal val tokenProvider = TokenProvider(appConfig.jwt, clock)
 internal val tokenValidator = TokenValidator(appConfig.jwt, clock)
