@@ -67,6 +67,12 @@ private val appConfig =
                 database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
                 collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
             ),
+        mongoBrowserTabInfo =
+            MongoConfig(
+                uri = secretConfig.tryGetString("mongodb-browser-tab-info.uri")!!,
+                database = secretConfig.tryGetString("mongodb-browser-tab-info.database")!!,
+                collection = secretConfig.tryGetString("mongodb-browser-tab-info.collection")!!,
+            ),
         oAuthGoogle =
             OAuthConfig(
                 clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
