@@ -2,23 +2,29 @@ package com.example.domain.user
 
 import com.example.adapter.UserDocument
 import org.bson.types.ObjectId
+import java.time.Clock
 import java.time.Instant
 
-class FakeUserRepository : UserRepository {
+class FakeUserRepository(
+    private val clock: Clock,
+) : UserRepository {
     private val users = mutableListOf<UserDocument>()
+
+    override suspend fun find(userId: UserId): User? = users.find { it.id.toHexString() == userId.value }?.toDomain()
 
     override suspend fun findByEmail(email: String): User? = users.find { it.email == email }?.toDomain()
 
-    override suspend fun save(user: User) {
-        users.add(user.toDocument())
-    }
+    override suspend fun signUp(email: String): User {
+        val user =
+            UserDocument(
+                id = ObjectId(),
+                email = email,
+                signedUpAt = clock.millis(),
+            )
+        users.add(user)
 
-    private fun User.toDocument() =
-        UserDocument(
-            id = ObjectId(id.value),
-            email = email,
-            signedUpAt = signedUpAt.toEpochMilli(),
-        )
+        return user.toDomain()
+    }
 
     private fun UserDocument.toDomain() =
         User(

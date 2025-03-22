@@ -10,10 +10,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bson.codecs.kotlinx.ObjectIdSerializer
 import org.bson.types.ObjectId
+import java.time.Clock
 import java.time.Instant
 
 class MongoUserRepository(
     private val dao: MongoCollection<UserDocument>,
+    private val clock: Clock,
 ) : UserRepository {
     override suspend fun find(userId: UserId): User? =
         dao
@@ -29,16 +31,17 @@ class MongoUserRepository(
             ).firstOrNull()
             ?.toDomain()
 
-    override suspend fun save(user: User) {
-        dao.insertOne(user.toDocument())
-    }
+    override suspend fun signUp(email: String): User {
+        val user =
+            UserDocument(
+                id = ObjectId(),
+                email = email,
+                signedUpAt = clock.millis(),
+            )
+        dao.insertOne(user)
 
-    private fun User.toDocument() =
-        UserDocument(
-            id = ObjectId(id.value),
-            email = email,
-            signedUpAt = signedUpAt.toEpochMilli(),
-        )
+        return user.toDomain()
+    }
 
     private fun UserDocument.toDomain() =
         User(

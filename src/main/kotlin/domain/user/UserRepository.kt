@@ -5,5 +5,5 @@ interface UserRepository {
 
     suspend fun findByEmail(email: String): User?
 
-    suspend fun save(user: User)
+    suspend fun signUp(email: String): User
 }
