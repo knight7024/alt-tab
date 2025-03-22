@@ -2,8 +2,7 @@ name: Build Check
 
 on:
   pull_request:
-    types:
-      - opened
+    types: [opened, synchronize, reopened]
     branches:
       - '**'
 
@@ -25,4 +24,4 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew clean build
