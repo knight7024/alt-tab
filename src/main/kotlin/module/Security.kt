@@ -12,6 +12,8 @@ import io.ktor.server.auth.OAuthServerSettings
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.bearer
 import io.ktor.server.auth.oauth
+import io.ktor.server.auth.principal
+import io.ktor.server.routing.RoutingCall
 
 /**
  * @see com.example.domain.token.TokenProvider
@@ -59,6 +61,8 @@ internal fun Application.configureSecurity(
         }
     }
 }
+
+internal fun RoutingCall.authenticatedUser() = requireNotNull(principal<UserPrincipal>()).user
 
 data class UserPrincipal(
     val user: User,

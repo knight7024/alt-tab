@@ -18,7 +18,7 @@ class MongoUserRepository(
     override suspend fun find(userId: UserId): User? =
         dao
             .find(
-                Filters.eq(UserDocument.FIELD_ID, userId.value),
+                Filters.eq(UserDocument.FIELD_ID, ObjectId(userId.value)),
             ).firstOrNull()
             ?.toDomain()
 
