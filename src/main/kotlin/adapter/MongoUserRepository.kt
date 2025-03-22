@@ -51,10 +51,10 @@ class MongoUserRepository(
         )
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class UserDocument(
     @SerialName(FIELD_ID)
-    @OptIn(ExperimentalSerializationApi::class)
     @Serializable(with = ObjectIdSerializer::class)
     val id: ObjectId,
     @SerialName(FIELD_EMAIL)
