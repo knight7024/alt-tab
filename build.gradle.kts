@@ -49,6 +49,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version") // 안쓰면 제거한다.
     testImplementation("io.kotest:kotest-runner-junit5:$kotest_version")
     testImplementation("io.kotest:kotest-assertions-core:$kotest_version")
+
+    testFixturesImplementation("org.mongodb:bson:$mongo_version")
 }
 
 tasks.withType<Test>().configureEach {

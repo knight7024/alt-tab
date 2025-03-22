@@ -5,9 +5,9 @@ import com.example.domain.user.UserId
 import java.util.UUID
 
 object TokenIdFixtures {
-    fun dummy() =
+    fun dummy(userId: UserId = UserId(UUID.randomUUID().toString())) =
         TokenId(
-            userId = UserId(UUID.randomUUID().toString()),
+            userId = userId,
             pairingKey = UUID.randomUUID().toString(),
         )
 }

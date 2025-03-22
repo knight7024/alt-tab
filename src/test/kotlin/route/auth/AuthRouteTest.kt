@@ -1,11 +1,10 @@
-package com.example.route
+package com.example.route.auth
 
 import com.example.baseTestApplication
 import com.example.clock
 import com.example.domain.token.AccessToken
 import com.example.domain.token.RefreshToken
 import com.example.refreshTokenRepository
-import com.example.route.auth.TokenDto
 import com.example.tokenProvider
 import domain.token.TokenIdFixtures
 import io.kotest.core.spec.style.DescribeSpec

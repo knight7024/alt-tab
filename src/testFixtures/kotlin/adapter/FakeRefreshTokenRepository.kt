@@ -1,5 +1,6 @@
-package com.example.adapter
+package adapter
 
+import com.example.adapter.RefreshTokenDocument
 import com.example.domain.token.RefreshToken
 import com.example.domain.token.RefreshTokenRepository
 
