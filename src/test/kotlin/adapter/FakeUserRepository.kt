@@ -1,6 +1,8 @@
-package com.example.domain.user
+package com.example.adapter
 
-import com.example.adapter.UserDocument
+import com.example.domain.user.User
+import com.example.domain.user.UserId
+import com.example.domain.user.UserRepository
 import org.bson.types.ObjectId
 import java.time.Clock
 import java.time.Instant

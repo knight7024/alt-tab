@@ -1,7 +1,9 @@
 package com.example
 
 import com.example.adapter.GoogleClient
+import com.example.adapter.MongoBrowserTabInfoRepository
 import com.example.adapter.MongoRefreshTokenRepository
+import com.example.adapter.MongoStashSettingRepository
 import com.example.adapter.MongoUserRepository
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
@@ -11,11 +13,13 @@ import com.example.config.UrlConfig
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
 import com.example.domain.user.UserAuthorizationService
+import com.example.module.browserTabInfoDao
 import com.example.module.configureHTTP
 import com.example.module.configureRouting
 import com.example.module.configureSecurity
 import com.example.module.configureSerialization
 import com.example.module.refreshTokenDao
+import com.example.module.stashSettingDao
 import com.example.module.userDao
 import io.ktor.server.application.Application
 import io.ktor.server.config.ApplicationConfig
@@ -49,6 +53,18 @@ internal fun Application.module() {
                     database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
                     collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
                 ),
+            mongoBrowserTabInfo =
+                MongoConfig(
+                    uri = secretConfig.tryGetString("mongodb-browser-tab-info.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-browser-tab-info.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-browser-tab-info.collection")!!,
+                ),
+            mongoStashSetting =
+                MongoConfig(
+                    uri = secretConfig.tryGetString("mongodb-stash-setting.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-stash-setting.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-stash-setting.collection")!!,
+                ),
             oAuthGoogle =
                 OAuthConfig(
                     clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
@@ -64,12 +80,15 @@ internal fun Application.module() {
     val clock = Clock.systemDefaultZone()
     val userEmailRepository = GoogleClient(appConfig.googleUrl.baseUrl)
     val userRepository = MongoUserRepository(userDao(appConfig.mongoUser), clock)
+    val stashSettingRepository = MongoStashSettingRepository(stashSettingDao(appConfig.mongoStashSetting))
 
     val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository)
 
     val tokenProvider = TokenProvider(appConfig.jwt, clock)
     val tokenValidator = TokenValidator(appConfig.jwt, clock)
     val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken))
+
+    val browserTabInfoRepository = MongoBrowserTabInfoRepository(browserTabInfoDao(appConfig.mongoBrowserTabInfo))
 
     // configure
     configureSecurity(
@@ -81,6 +100,7 @@ internal fun Application.module() {
     configureSerialization()
     configureRouting(
         userAuthorizationService = userAuthorizationService,
+        stashSettingRepository = stashSettingRepository,
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,

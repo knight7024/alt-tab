@@ -1,15 +1,16 @@
 package com.example
 
+import com.example.adapter.FakeRefreshTokenRepository
+import com.example.adapter.FakeStashSettingRepository
 import com.example.adapter.FakeUserEmailRepository
+import com.example.adapter.FakeUserRepository
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
-import com.example.domain.token.FakeRefreshTokenRepository
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
-import com.example.domain.user.FakeUserRepository
 import com.example.domain.user.UserAuthorizationService
 import com.example.module.configureHTTP
 import com.example.module.configureRouting
@@ -37,6 +38,7 @@ private fun Application.testModule() {
     configureSerialization()
     configureRouting(
         userAuthorizationService = userAuthorizationService,
+        stashSettingRepository = stashSettingRepository,
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
@@ -67,6 +69,18 @@ private val appConfig =
                 database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
                 collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
             ),
+        mongoBrowserTabInfo =
+            MongoConfig(
+                uri = secretConfig.tryGetString("mongodb-browser-tab-info.uri")!!,
+                database = secretConfig.tryGetString("mongodb-browser-tab-info.database")!!,
+                collection = secretConfig.tryGetString("mongodb-browser-tab-info.collection")!!,
+            ),
+        mongoStashSetting =
+            MongoConfig(
+                uri = secretConfig.tryGetString("mongodb-stash-setting.uri")!!,
+                database = secretConfig.tryGetString("mongodb-stash-setting.database")!!,
+                collection = secretConfig.tryGetString("mongodb-stash-setting.collection")!!,
+            ),
         oAuthGoogle =
             OAuthConfig(
                 clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
@@ -82,6 +96,7 @@ private val appConfig =
 internal val clock = FakeClock()
 internal val userEmailRepository = FakeUserEmailRepository()
 internal val userRepository = FakeUserRepository(clock)
+internal val stashSettingRepository = FakeStashSettingRepository()
 
 internal val userAuthorizationService = UserAuthorizationService(userEmailRepository, userRepository)
 

@@ -1,5 +1,6 @@
 package com.example.route.auth
 
+import com.example.domain.extension.StashSettingRepository
 import com.example.domain.token.RefreshTokenRepository
 import com.example.domain.token.TokenId
 import com.example.domain.token.TokenProvider
@@ -20,6 +21,7 @@ import org.jetbrains.annotations.VisibleForTesting
 
 fun Routing.authorization(
     userAuthorizationService: UserAuthorizationService,
+    stashSettingRepository: StashSettingRepository,
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
     refreshTokenRepository: RefreshTokenRepository,
@@ -33,7 +35,10 @@ fun Routing.authorization(
                 val (accessToken, refreshToken) =
                     tokenProvider
                         .issueAll(TokenId(user.id))
-                        .also { refreshTokenRepository.save(it.second) }
+                        .also {
+                            refreshTokenRepository.save(it.second)
+                            stashSettingRepository.init(user.id)
+                        }
 
                 return@get call.respond(TokenDto(accessToken.value, refreshToken.value))
             }

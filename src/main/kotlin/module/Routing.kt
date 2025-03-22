@@ -1,5 +1,6 @@
 package com.example.module
 
+import com.example.domain.extension.StashSettingRepository
 import com.example.domain.token.RefreshTokenRepository
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
@@ -15,6 +16,7 @@ import io.ktor.server.routing.routing
 
 internal fun Application.configureRouting(
     userAuthorizationService: UserAuthorizationService,
+    stashSettingRepository: StashSettingRepository,
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
     refreshTokenRepository: RefreshTokenRepository,
@@ -33,6 +35,7 @@ internal fun Application.configureRouting(
 
         authorization(
             userAuthorizationService = userAuthorizationService,
+            stashSettingRepository = stashSettingRepository,
             tokenProvider = tokenProvider,
             tokenValidator = tokenValidator,
             refreshTokenRepository = refreshTokenRepository,
