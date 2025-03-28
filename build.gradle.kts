@@ -45,11 +45,13 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     implementation("io.arrow-kt:arrow-core:2.0.1")
+    implementation("org.sqids:sqids:0.1.0")
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version") // 안쓰면 제거한다.
     testImplementation("io.kotest:kotest-runner-junit5:$kotest_version")
     testImplementation("io.kotest:kotest-assertions-core:$kotest_version")
+    testImplementation("io.kotest.extensions:kotest-assertions-arrow:2.0.0")
 
     testFixturesImplementation("org.mongodb:bson:$mongo_version")
 }

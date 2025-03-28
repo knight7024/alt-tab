@@ -107,6 +107,7 @@ internal val tokenProvider = TokenProvider(appConfig.jwt, clock)
 internal val tokenValidator = TokenValidator(appConfig.jwt, clock)
 internal val refreshTokenRepository = FakeRefreshTokenRepository()
 
+internal val hashIdCodec = HashIdCodec(clock)
 internal val bootstrapService = BootstrapService(tokenProvider, userRepository, refreshTokenRepository, stashSettingRepository)
 
 internal fun baseTestApplication(
