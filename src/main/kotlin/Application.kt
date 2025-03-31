@@ -54,11 +54,11 @@ internal fun Application.module() {
                     database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
                     collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
                 ),
-            mongoBrowserTabInfo =
+            mongoTabGroup =
                 MongoConfig(
-                    uri = secretConfig.tryGetString("mongodb-browser-tab-info.uri")!!,
-                    database = secretConfig.tryGetString("mongodb-browser-tab-info.database")!!,
-                    collection = secretConfig.tryGetString("mongodb-browser-tab-info.collection")!!,
+                    uri = secretConfig.tryGetString("mongodb-tab-group.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-tab-group.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-tab-group.collection")!!,
                 ),
             mongoStashSetting =
                 MongoConfig(
@@ -90,7 +90,7 @@ internal fun Application.module() {
     val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken))
 
     val hashIdCodec = HashIdCodec(clock)
-    val browserTabInfoRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoBrowserTabInfo), hashIdCodec)
+    val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup), hashIdCodec)
 
     // configure
     configureSecurity(
@@ -106,7 +106,7 @@ internal fun Application.module() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
-        tabGroupRepository = browserTabInfoRepository,
+        tabGroupRepository = tabGroupRepository,
         hashIdCodec = hashIdCodec,
     )
 }
