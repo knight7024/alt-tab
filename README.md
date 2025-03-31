@@ -14,7 +14,7 @@ Here are some useful links to get you started:
 Here's a list of features included in this project:
 
 | Name                                                                   | Description                                                                        |
-| ------------------------------------------------------------------------|------------------------------------------------------------------------------------ |
+|------------------------------------------------------------------------|------------------------------------------------------------------------------------|
 | [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
 | [Authentication](https://start.ktor.io/p/auth)                         | Provides extension point for handling the Authorization header                     |
 | [Authentication JWT](https://start.ktor.io/p/auth-jwt)                 | Handles JSON Web Token (JWT) bearer authentication scheme                          |
@@ -24,13 +24,14 @@ Here's a list of features included in this project:
 | [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
 | [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
 | [MongoDB](https://start.ktor.io/p/mongodb)                             | Adds MongoDB database to your application                                          |
+| [Status Pages](https://start.ktor.io/p/status-pages)                   | Provides exception handling for routes                                             |
 
 ## Building & Running
 
 To build or run the project, use one of the following tasks:
 
 | Task                          | Description                                                          |
-| -------------------------------|---------------------------------------------------------------------- |
+|-------------------------------|----------------------------------------------------------------------|
 | `./gradlew test`              | Run the tests                                                        |
 | `./gradlew build`             | Build everything                                                     |
 | `buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
