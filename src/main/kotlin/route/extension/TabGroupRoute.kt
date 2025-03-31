@@ -33,7 +33,7 @@ fun Routing.tabGroup(
                         .findAllByUserId(user.id)
                         .map { it.toDto() }
 
-                // TODO: 페이지네이션 필요
+                // TODO: 일부 필드만 줘도 되고, 페이지네이션도 필요
                 return@get call.respond(tabGroups)
             }
 

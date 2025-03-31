@@ -149,7 +149,8 @@ paths:
           description: 해당하는 탭 그룹이 존재하지 않음
   /tab-group/{id}:
     get:
-      description: QR 코드로 탭 그룹 조회
+      description: QR 코드로 탭 그룹 조회.
+        반드시 /tab-group/qr-code로 생성된 id여야 한다.
       tags:
         - TabGroup
       parameters:
