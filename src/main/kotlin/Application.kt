@@ -1,25 +1,26 @@
 package com.example
 
 import com.example.adapter.GoogleClient
-import com.example.adapter.MongoBrowserTabInfoRepository
 import com.example.adapter.MongoRefreshTokenRepository
 import com.example.adapter.MongoStashSettingRepository
+import com.example.adapter.MongoTabGroupRepository
 import com.example.adapter.MongoUserRepository
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
+import com.example.domain.extension.HashIdCodec
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
 import com.example.domain.user.UserAuthorizationService
-import com.example.module.browserTabInfoDao
 import com.example.module.configureHTTP
 import com.example.module.configureRouting
 import com.example.module.configureSecurity
 import com.example.module.configureSerialization
 import com.example.module.refreshTokenDao
 import com.example.module.stashSettingDao
+import com.example.module.tabGroupDao
 import com.example.module.userDao
 import io.ktor.server.application.Application
 import io.ktor.server.config.ApplicationConfig
@@ -53,11 +54,11 @@ internal fun Application.module() {
                     database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
                     collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
                 ),
-            mongoBrowserTabInfo =
+            mongoTabGroup =
                 MongoConfig(
-                    uri = secretConfig.tryGetString("mongodb-browser-tab-info.uri")!!,
-                    database = secretConfig.tryGetString("mongodb-browser-tab-info.database")!!,
-                    collection = secretConfig.tryGetString("mongodb-browser-tab-info.collection")!!,
+                    uri = secretConfig.tryGetString("mongodb-tab-group.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-tab-group.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-tab-group.collection")!!,
                 ),
             mongoStashSetting =
                 MongoConfig(
@@ -88,7 +89,8 @@ internal fun Application.module() {
     val tokenValidator = TokenValidator(appConfig.jwt, clock)
     val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken))
 
-    val browserTabInfoRepository = MongoBrowserTabInfoRepository(browserTabInfoDao(appConfig.mongoBrowserTabInfo))
+    val hashIdCodec = HashIdCodec(clock)
+    val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup), hashIdCodec)
 
     // configure
     configureSecurity(
@@ -104,6 +106,8 @@ internal fun Application.module() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
+        tabGroupRepository = tabGroupRepository,
+        hashIdCodec = hashIdCodec,
     )
 }
 

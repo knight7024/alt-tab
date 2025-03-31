@@ -1,8 +1,8 @@
 package com.example.module
 
-import com.example.adapter.BrowserTabInfoDocument
 import com.example.adapter.RefreshTokenDocument
 import com.example.adapter.StashSettingDocument
+import com.example.adapter.TabGroupDocument
 import com.example.adapter.UserDocument
 import com.example.config.MongoConfig
 import com.mongodb.ConnectionString
@@ -53,7 +53,7 @@ internal fun Application.refreshTokenDao(mongoConfig: MongoConfig): MongoCollect
         .getCollection(mongoConfig.collection, RefreshTokenDocument::class.java)
 }
 
-internal fun Application.browserTabInfoDao(mongoConfig: MongoConfig): MongoCollection<BrowserTabInfoDocument> {
+internal fun Application.tabGroupDao(mongoConfig: MongoConfig): MongoCollection<TabGroupDocument> {
     val mongoClient =
         MongoClientSettings
             .builder()
@@ -70,7 +70,7 @@ internal fun Application.browserTabInfoDao(mongoConfig: MongoConfig): MongoColle
 
     return mongoClient
         .getDatabase(mongoConfig.database)
-        .getCollection(mongoConfig.collection, BrowserTabInfoDocument::class.java)
+        .getCollection(mongoConfig.collection, TabGroupDocument::class.java)
 }
 
 internal fun Application.stashSettingDao(mongoConfig: MongoConfig): MongoCollection<StashSettingDocument> {

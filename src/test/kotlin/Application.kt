@@ -4,6 +4,7 @@ import BootstrapService
 import FakeClock
 import adapter.FakeRefreshTokenRepository
 import adapter.FakeStashSettingRepository
+import adapter.FakeTabGroupRepository
 import adapter.FakeUserEmailRepository
 import adapter.FakeUserRepository
 import com.example.config.AppConfig
@@ -11,6 +12,7 @@ import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
+import com.example.domain.extension.HashIdCodec
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
 import com.example.domain.user.UserAuthorizationService
@@ -45,6 +47,8 @@ private fun Application.testModule() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
+        tabGroupRepository = tabGroupRepository,
+        hashIdCodec = hashIdCodec,
     )
 }
 
@@ -72,11 +76,11 @@ private val appConfig =
                 database = secretConfig.tryGetString("mongodb-refresh-tokens.database")!!,
                 collection = secretConfig.tryGetString("mongodb-refresh-tokens.collection")!!,
             ),
-        mongoBrowserTabInfo =
+        mongoTabGroup =
             MongoConfig(
-                uri = secretConfig.tryGetString("mongodb-browser-tab-info.uri")!!,
-                database = secretConfig.tryGetString("mongodb-browser-tab-info.database")!!,
-                collection = secretConfig.tryGetString("mongodb-browser-tab-info.collection")!!,
+                uri = secretConfig.tryGetString("mongodb-tab-group.uri")!!,
+                database = secretConfig.tryGetString("mongodb-tab-group.database")!!,
+                collection = secretConfig.tryGetString("mongodb-tab-group.collection")!!,
             ),
         mongoStashSetting =
             MongoConfig(
@@ -97,6 +101,7 @@ private val appConfig =
 
 // dependency
 internal val clock = FakeClock()
+
 internal val userEmailRepository = FakeUserEmailRepository()
 internal val userRepository = FakeUserRepository(clock)
 internal val stashSettingRepository = FakeStashSettingRepository()
@@ -106,6 +111,9 @@ internal val userAuthorizationService = UserAuthorizationService(userEmailReposi
 internal val tokenProvider = TokenProvider(appConfig.jwt, clock)
 internal val tokenValidator = TokenValidator(appConfig.jwt, clock)
 internal val refreshTokenRepository = FakeRefreshTokenRepository()
+
+internal val hashIdCodec = HashIdCodec(clock)
+internal val tabGroupRepository = FakeTabGroupRepository(hashIdCodec)
 
 internal val bootstrapService = BootstrapService(tokenProvider, userRepository, refreshTokenRepository, stashSettingRepository)
 
