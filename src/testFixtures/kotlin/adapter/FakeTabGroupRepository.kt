@@ -11,6 +11,8 @@ class FakeTabGroupRepository : TabGroupRepository {
 
     override suspend fun find(id: Long): TabGroup? = tabGroups[id]
 
+    override suspend fun findAllByUserId(userId: UserId): List<TabGroup> = tabGroups.values.filter { it.userId == userId }
+
     override suspend fun save(
         userId: UserId,
         secret: String,
@@ -27,10 +29,5 @@ class FakeTabGroupRepository : TabGroupRepository {
                 )
             return this
         }
-    }
-
-    fun clear() {
-        id = 0L
-        tabGroups.clear()
     }
 }

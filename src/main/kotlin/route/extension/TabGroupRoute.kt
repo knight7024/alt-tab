@@ -26,6 +26,16 @@ fun Routing.tabGroup(
 ) {
     authenticate("auth-bearer", strategy = AuthenticationStrategy.Required) {
         route("/tab-group") {
+            get {
+                val user = call.authenticatedUser()
+                val tabGroups =
+                    tabGroupRepository
+                        .findAllByUserId(user.id)
+                        .map { it.toDto() }
+
+                return@get call.respond(tabGroups)
+            }
+
             post {
                 val user = call.authenticatedUser()
                 val tabGroup = call.receive<TabGroupDto>()

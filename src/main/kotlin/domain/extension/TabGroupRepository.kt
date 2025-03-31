@@ -5,6 +5,8 @@ import com.example.domain.user.UserId
 interface TabGroupRepository {
     suspend fun find(id: Long): TabGroup?
 
+    suspend fun findAllByUserId(userId: UserId): List<TabGroup>
+
     /**
      * @return 저장된 탭 그룹 id
      */

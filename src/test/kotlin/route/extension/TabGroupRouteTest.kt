@@ -18,14 +18,24 @@ import java.time.Duration
 class TabGroupRouteTest :
     DescribeSpec({
         beforeTest {
-            tabGroupRepository.clear()
             clock.reset()
         }
 
         describe("TabGroupRouteTest") {
-            val (user, accessToken, _) = bootstrapService.signUp()
+            describe("나의 탭 그룹 조회") {
+                val (user, accessToken, _) = bootstrapService.signUp()
+                baseTestApplication(accessToken.value) { client ->
+                    val response = client.get("/tab-group")
+
+                    response.status shouldBe HttpStatusCode.OK
+                    tabGroupRepository.findAllByUserId(user.id).also {
+                        it.map { it.toDto() }.toSet() shouldBe response.body<Set<TabGroupDto>>()
+                    }
+                }
+            }
 
             describe("탭 그룹 생성") {
+                val (user, accessToken, _) = bootstrapService.signUp()
                 baseTestApplication(accessToken.value) { client ->
                     val request = TabGroupFixtures.dummy(user.id).toDto()
                     val response =
@@ -48,6 +58,7 @@ class TabGroupRouteTest :
             }
 
             describe("탭 그룹 조회") {
+                val (user, accessToken, _) = bootstrapService.signUp()
                 baseTestApplication(accessToken.value) { client ->
                     val id =
                         client
@@ -71,6 +82,7 @@ class TabGroupRouteTest :
             }
 
             describe("만료된 QR 코드로 탭 그룹 조회") {
+                val (user, accessToken, _) = bootstrapService.signUp()
                 baseTestApplication(accessToken.value) { client ->
                     val id =
                         client
@@ -93,7 +105,7 @@ class TabGroupRouteTest :
 
             describe("존재하지 않는 탭 그룹 조회") {
                 baseTestApplication { client ->
-                    val id = hashIdCodec.encode(1L, clock.instant().plusSeconds(1))
+                    val id = hashIdCodec.encode(0L, clock.instant().plusSeconds(1))
 
                     val response = client.get("/tab-group/$id")
 

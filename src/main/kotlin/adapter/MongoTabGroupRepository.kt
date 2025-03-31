@@ -22,6 +22,13 @@ class MongoTabGroupRepository(
             ).first()
             ?.toDomain()
 
+    override suspend fun findAllByUserId(userId: UserId): List<TabGroup> =
+        dao
+            .find(
+                Filters.eq(TabGroupDocument.FIELD_USER_ID, userId.value),
+            ).map { it.toDomain() }
+            .toList()
+
     override suspend fun save(
         userId: UserId,
         secret: String,
