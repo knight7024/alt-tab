@@ -2,13 +2,22 @@ package com.example.module
 
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.plugins.swagger.swaggerUI
+import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 
 internal fun Application.configureHTTP() {
+    install(StatusPages) {
+        exception<Throwable> { call, _ ->
+            // TODO: logging
+            call.respond(HttpStatusCode.InternalServerError)
+        }
+    }
     install(CORS) {
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)
