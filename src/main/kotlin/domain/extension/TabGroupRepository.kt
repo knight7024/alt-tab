@@ -3,7 +3,7 @@ package com.example.domain.extension
 import com.example.domain.user.UserId
 
 interface TabGroupRepository {
-    suspend fun find(id: String): TabGroup?
+    suspend fun find(id: Long): TabGroup?
 
     suspend fun findAllByUserId(userId: UserId): List<TabGroup>
 
@@ -15,7 +15,7 @@ interface TabGroupRepository {
         secret: String,
         salt: String,
         tabs: Collection<BrowserTabInfo>,
-    ): String
+    )
 
-    suspend fun remove(id: String)
+    suspend fun remove(id: Long)
 }

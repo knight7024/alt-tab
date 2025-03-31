@@ -10,7 +10,6 @@ import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
-import com.example.domain.extension.HashIdCodec
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
 import com.example.domain.user.UserAuthorizationService
@@ -89,8 +88,7 @@ internal fun Application.module() {
     val tokenValidator = TokenValidator(appConfig.jwt, clock)
     val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken))
 
-    val hashIdCodec = HashIdCodec(clock)
-    val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup), hashIdCodec)
+    val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup))
 
     // configure
     configureSecurity(
@@ -107,7 +105,6 @@ internal fun Application.module() {
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
         tabGroupRepository = tabGroupRepository,
-        hashIdCodec = hashIdCodec,
         clock = clock,
     )
 }

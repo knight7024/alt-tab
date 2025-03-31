@@ -4,14 +4,14 @@ import com.example.domain.user.UserId
 import java.time.Instant
 
 /**
- * @param id 인코딩된 탭 그룹 id. 생성할 때마다 달라질 수 있지만 디코딩한 결과는 같다.
+ * @param id 탭 그룹 id
  * @param userId 탭 그룹을 생성한 유저 id
  * @param secret E2EE에 사용될 암호화된 시크릿 키
  * @param salt E2EE에 사용될 salt
  * @param tabs 탭 정보들
  */
 data class TabGroup(
-    val id: String,
+    val id: Long,
     val userId: UserId,
     val secret: String,
     val salt: String,
@@ -19,8 +19,8 @@ data class TabGroup(
 )
 
 /**
- * @param groupId 탭 그룹 id. 브라우저마다 명칭이 다르거나 존재하지 않을 수도 있다.
  * @param windowId 브라우저의 윈도우 id. 탭이 어느 윈도우에 존재하는지 구분하기 위해 사용한다.
+ * @param groupId 그룹 id. 브라우저마다 명칭이 다르거나 존재하지 않을 수도 있다.
  * @param tabIndex 탭 인덱스
  * @param title 탭 제목
  * @param url 탭 주소

@@ -1,8 +1,6 @@
 package com.example.adapter
 
-import arrow.core.merge
 import com.example.domain.extension.BrowserTabInfo
-import com.example.domain.extension.HashIdCodec
 import com.example.domain.extension.RelativeRatio
 import com.example.domain.extension.TabGroup
 import com.example.domain.extension.TabGroupRepository
@@ -16,18 +14,12 @@ import kotlin.random.Random
 
 class MongoTabGroupRepository(
     private val dao: MongoCollection<TabGroupDocument>,
-    private val hashIdCodec: HashIdCodec,
 ) : TabGroupRepository {
-    override suspend fun find(id: String): TabGroup? =
-        hashIdCodec
-            .decode(id)
-            .mapLeft { null }
-            .map {
-                dao
-                    .find(Filters.eq(TabGroupDocument.FIELD_ID, id))
-                    .first()
-                    ?.toDomain()
-            }.merge()
+    override suspend fun find(id: Long): TabGroup? =
+        dao
+            .find(Filters.eq(TabGroupDocument.FIELD_ID, id))
+            .first()
+            ?.toDomain()
 
     override suspend fun findAllByUserId(userId: UserId): List<TabGroup> =
         dao
@@ -42,7 +34,7 @@ class MongoTabGroupRepository(
         /* TODO: 양이 많을 수도, 사이즈가 클 수도 있다.
             chunk해서 저장하거나, 사이즈 제한을 걸어야 할 수도 있다. */
         tabs: Collection<BrowserTabInfo>,
-    ): String {
+    ) {
         // TODO: counter collection 구현
         val id = Random.nextLong(1, Long.MAX_VALUE)
         dao.insertOne(
@@ -54,19 +46,15 @@ class MongoTabGroupRepository(
                 tabs = tabs.map { it.toDocument() },
             ),
         )
-        return hashIdCodec.encode(id)
     }
 
-    override suspend fun remove(id: String) {
-        hashIdCodec
-            .decode(id)
-            .getOrNull()
-            ?.let { dao.deleteOne(Filters.eq(TabGroupDocument.FIELD_ID, it)) }
+    override suspend fun remove(id: Long) {
+        dao.deleteOne(Filters.eq(TabGroupDocument.FIELD_ID, id))
     }
 
     private fun TabGroupDocument.toDomain() =
         TabGroup(
-            id = hashIdCodec.encode(id),
+            id = id,
             userId = UserId(userId),
             secret = secret,
             salt = salt,

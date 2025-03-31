@@ -1,6 +1,5 @@
 package com.example.module
 
-import com.example.domain.extension.HashIdCodec
 import com.example.domain.extension.StashSettingRepository
 import com.example.domain.extension.TabGroupRepository
 import com.example.domain.token.RefreshTokenRepository
@@ -23,7 +22,6 @@ internal fun Application.configureRouting(
     tokenValidator: TokenValidator,
     refreshTokenRepository: RefreshTokenRepository,
     tabGroupRepository: TabGroupRepository,
-    hashIdCodec: HashIdCodec,
     clock: Clock,
 ) {
     routing {
@@ -45,7 +43,6 @@ internal fun Application.configureRouting(
 
         tabGroup(
             tabGroupRepository = tabGroupRepository,
-            hashIdCodec = hashIdCodec,
             clock = clock,
         )
     }

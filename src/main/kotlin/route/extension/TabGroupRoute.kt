@@ -23,7 +23,6 @@ import java.time.Instant
 
 fun Routing.tabGroup(
     tabGroupRepository: TabGroupRepository,
-    hashIdCodec: HashIdCodec,
     clock: Clock,
 ) {
     authenticate("auth-bearer", strategy = AuthenticationStrategy.Required) {
@@ -42,25 +41,27 @@ fun Routing.tabGroup(
                 val user = call.authenticatedUser()
                 val tabGroup = call.receive<CreateTabGroupRequest>()
 
-                val tabGroupId =
-                    tabGroupRepository
-                        .save(
-                            userId = user.id,
-                            secret = tabGroup.secret,
-                            salt = tabGroup.salt,
-                            tabs = tabGroup.browserTabInfos.map { it.toDomain() },
-                        )
+                tabGroupRepository
+                    .save(
+                        userId = user.id,
+                        secret = tabGroup.secret,
+                        salt = tabGroup.salt,
+                        tabs = tabGroup.browserTabInfos.map { it.toDomain() },
+                    )
 
-                return@post call.respond(CreateTabGroupResponse(tabGroupId))
+                return@post call.respond(HttpStatusCode.OK)
             }
 
             delete {
                 val user = call.authenticatedUser()
-                val tabGroup =
-                    call
-                        .receive<DeleteTabGroupRequest>()
-                        .id
-                        .let { tabGroupRepository.find(it) }
+                val request = call.receive<DeleteTabGroupRequest>()
+
+                val numericId =
+                    request.id
+                        .let { HashIdCodec.decode(it) }
+                        .also { check(it.size == 1) }
+                        .first()
+                val tabGroup = tabGroupRepository.find(numericId)
 
                 checkNotNull(tabGroup)
                 check(tabGroup.userId == user.id)
@@ -74,14 +75,18 @@ fun Routing.tabGroup(
                 val user = call.authenticatedUser()
                 val request = call.receive<CreateTabGroupQrCodeRequest>()
 
+                val numericId =
+                    request.id
+                        .let { HashIdCodec.decode(it) }
+                        .also { check(it.size == 1) }
+                        .first()
                 val tabGroup =
-                    tabGroupRepository.find(request.id)
+                    tabGroupRepository.find(numericId)
                         ?: return@post call.respond(HttpStatusCode.NotFound)
 
                 check(tabGroup.userId == user.id)
 
-                val numericId = hashIdCodec.decode(tabGroup.id).getOrNull()!!
-                val qrCodeId = hashIdCodec.encode(numericId, clock.instant().plusSeconds(600))
+                val qrCodeId = HashIdCodec.encode(numericId, clock.instant().plusSeconds(600))
 
                 return@post call.respond(CreateTabGroupQrCodeResponse("/tab-group/$qrCodeId"))
             }
@@ -91,9 +96,16 @@ fun Routing.tabGroup(
     // QR 코드를 통해 접근하는 경우라서 인증이 필요 없다.
     get("/tab-group/{id}") {
         val id = call.parameters["id"]!!
+        val numericId =
+            HashIdCodec
+                .decode(id)
+                .also {
+                    check(it.size == 2)
+                    check(clock.instant().epochSecond < it[1])
+                }.first()
 
         val tabGroup =
-            tabGroupRepository.find(id)
+            tabGroupRepository.find(numericId)
                 ?: return@get call.respond(HttpStatusCode.NotFound)
 
         return@get call.respond(tabGroup.toDto())
@@ -103,7 +115,7 @@ fun Routing.tabGroup(
 @VisibleForTesting
 internal fun TabGroup.toDto() =
     TabGroupDto(
-        id = id,
+        id = HashIdCodec.encode(id),
         secret = secret,
         salt = salt,
         browserTabInfos = tabs.map { it.toDto() },
