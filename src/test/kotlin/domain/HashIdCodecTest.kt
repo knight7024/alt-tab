@@ -2,8 +2,8 @@ package com.example.domain
 
 import com.example.clock
 import com.example.hashIdCodec
-import io.kotest.assertions.arrow.core.shouldBeLeft
-import io.kotest.assertions.arrow.core.shouldBeRight
+import com.example.shouldBeLeft
+import com.example.shouldBeRight
 import io.kotest.core.spec.style.StringSpec
 import java.time.Duration
 import java.time.temporal.ChronoUnit

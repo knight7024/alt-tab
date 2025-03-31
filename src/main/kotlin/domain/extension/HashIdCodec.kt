@@ -2,8 +2,8 @@ package com.example.domain.extension
 
 import arrow.core.Either
 import arrow.core.Either.Companion.catch
+import org.sqids.DEFAULT_ALPHABET
 import org.sqids.Sqids
-import org.sqids.Sqids.Builder.DEFAULT_ALPHABET
 import java.time.Clock
 import java.time.Instant
 
@@ -36,11 +36,6 @@ class HashIdCodec(
         }.mapLeft { }
 
     companion object {
-        private val squids =
-            Sqids
-                .builder()
-                .minLength(4)
-                .alphabet("$DEFAULT_ALPHABET-_")
-                .build()
+        private val squids = Sqids(minLength = 4, alphabet = "$DEFAULT_ALPHABET-_")
     }
 }
