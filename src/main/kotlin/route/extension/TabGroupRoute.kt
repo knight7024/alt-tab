@@ -3,8 +3,6 @@ package com.example.route.extension
 import com.example.domain.extension.BrowserTabInfo
 import com.example.domain.extension.RelativeRatio
 import com.example.domain.extension.TabGroup
-import com.example.domain.extension.TabGroupId
-import com.example.domain.extension.TabGroupIdHasher
 import com.example.domain.extension.TabGroupRepository
 import com.example.module.authenticatedUser
 import io.ktor.http.HttpStatusCode

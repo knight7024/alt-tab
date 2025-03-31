@@ -1,4 +1,4 @@
-package com.example.domain.extension
+package com.example.route.extension
 
 import org.sqids.DEFAULT_ALPHABET
 import org.sqids.Sqids

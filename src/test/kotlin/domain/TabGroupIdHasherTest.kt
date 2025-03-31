@@ -1,8 +1,8 @@
 package com.example.domain
 
 import com.example.clock
-import com.example.domain.extension.TabGroupId
-import com.example.domain.extension.TabGroupIdHasher
+import com.example.route.extension.TabGroupId
+import com.example.route.extension.TabGroupIdHasher
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
