@@ -2,7 +2,6 @@ package com.example.route.extension
 
 import com.example.domain.extension.BrowserTabInfo
 import com.example.domain.extension.HashIdCodec
-import com.example.domain.extension.QRExpiry
 import com.example.domain.extension.RelativeRatio
 import com.example.domain.extension.TabGroup
 import com.example.domain.extension.TabGroupRepository
@@ -74,7 +73,6 @@ fun Routing.tabGroup(
             post("/qr-code") {
                 val user = call.authenticatedUser()
                 val request = call.receive<CreateTabGroupQrCodeRequest>()
-                val qrExpiry = QRExpiry.of(request.alive)
 
                 val tabGroup =
                     tabGroupRepository.find(request.id)
@@ -83,7 +81,7 @@ fun Routing.tabGroup(
                 check(tabGroup.userId == user.id)
 
                 val numericId = hashIdCodec.decode(tabGroup.id).getOrNull()!!
-                val qrCodeId = hashIdCodec.encode(numericId, clock.instant() + qrExpiry.duration)
+                val qrCodeId = hashIdCodec.encode(numericId, clock.instant().plusSeconds(600))
 
                 return@post call.respond(CreateTabGroupQrCodeResponse("/tab-group/$qrCodeId"))
             }
@@ -202,7 +200,6 @@ internal data class DeleteTabGroupRequest(
 @Serializable
 internal data class CreateTabGroupQrCodeRequest(
     val id: String,
-    val alive: Long,
 )
 
 @Serializable
