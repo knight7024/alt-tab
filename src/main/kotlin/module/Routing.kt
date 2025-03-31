@@ -43,7 +43,6 @@ internal fun Application.configureRouting(
 
         tabGroup(
             tabGroupRepository = tabGroupRepository,
-            hashIdCodec = hashIdCodec,
         )
     }
 }

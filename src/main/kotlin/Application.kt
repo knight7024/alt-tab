@@ -90,7 +90,7 @@ internal fun Application.module() {
     val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken))
 
     val hashIdCodec = HashIdCodec(clock)
-    val browserTabInfoRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoBrowserTabInfo))
+    val browserTabInfoRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoBrowserTabInfo), hashIdCodec)
 
     // configure
     configureSecurity(

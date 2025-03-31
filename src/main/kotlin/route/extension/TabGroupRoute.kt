@@ -1,8 +1,6 @@
 package com.example.route.extension
 
-import arrow.core.getOrElse
 import com.example.domain.extension.BrowserTabInfo
-import com.example.domain.extension.HashIdCodec
 import com.example.domain.extension.RelativeRatio
 import com.example.domain.extension.TabGroup
 import com.example.domain.extension.TabGroupRepository
@@ -20,10 +18,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.VisibleForTesting
 import java.time.Instant
 
-fun Routing.tabGroup(
-    tabGroupRepository: TabGroupRepository,
-    hashIdCodec: HashIdCodec,
-) {
+fun Routing.tabGroup(tabGroupRepository: TabGroupRepository) {
     authenticate("auth-bearer", strategy = AuthenticationStrategy.Required) {
         route("/tab-group") {
             get {
@@ -38,7 +33,7 @@ fun Routing.tabGroup(
 
             post {
                 val user = call.authenticatedUser()
-                val tabGroup = call.receive<TabGroupDto>()
+                val tabGroup = call.receive<CreateTabGroupRequest>()
 
                 val tabGroupId =
                     tabGroupRepository
@@ -47,9 +42,7 @@ fun Routing.tabGroup(
                             secret = tabGroup.secret,
                             salt = tabGroup.salt,
                             tabs = tabGroup.browserTabInfos.map { it.toDomain() },
-                        ).let {
-                            hashIdCodec.encode(it)
-                        }
+                        )
 
                 return@post call.respond(CreateTabGroupResponse(tabGroupId))
             }
@@ -60,10 +53,7 @@ fun Routing.tabGroup(
 
     // QR 코드를 통해 접근하는 경우라서 인증이 필요 없다.
     get("/tab-group/{id}") {
-        val id =
-            call.parameters["id"]!!
-                .let { hashIdCodec.decode(it) }
-                .getOrElse { return@get call.respond(HttpStatusCode.NotFound) }
+        val id = call.parameters["id"]!!
 
         val tabGroup =
             tabGroupRepository.find(id)
@@ -76,12 +66,44 @@ fun Routing.tabGroup(
 @VisibleForTesting
 internal fun TabGroup.toDto() =
     TabGroupDto(
+        id = id,
         secret = secret,
         salt = salt,
         browserTabInfos = tabs.map { it.toDto() },
     )
 
-private fun BrowserTabInfo.toDto() =
+@Serializable
+internal data class TabGroupDto(
+    val id: String,
+    val secret: String,
+    val salt: String,
+    val browserTabInfos: List<BrowserTabInfoDto>,
+)
+
+@Serializable
+internal data class BrowserTabInfoDto(
+    val windowId: String,
+    val groupId: String?,
+    val tabIndex: Int,
+    val title: String,
+    val url: String,
+    val faviconUrl: String?,
+    val incognito: Boolean,
+    val scrollPosition: RelativeRatio,
+    val lastUsedAgent: String,
+    val lastActiveAt: Long,
+    val session: String,
+    val cookie: String,
+) {
+    @Serializable
+    data class RelativeRatio(
+        val x: Double,
+        val y: Double,
+    )
+}
+
+@VisibleForTesting
+internal fun BrowserTabInfo.toDto() =
     BrowserTabInfoDto(
         windowId = windowId,
         groupId = groupId,
@@ -122,33 +144,11 @@ private fun BrowserTabInfoDto.toDomain() =
     )
 
 @Serializable
-internal data class TabGroupDto(
+internal data class CreateTabGroupRequest(
     val secret: String,
     val salt: String,
     val browserTabInfos: List<BrowserTabInfoDto>,
 )
-
-@Serializable
-internal data class BrowserTabInfoDto(
-    val windowId: String,
-    val groupId: String?,
-    val tabIndex: Int,
-    val title: String,
-    val url: String,
-    val faviconUrl: String?,
-    val incognito: Boolean,
-    val scrollPosition: RelativeRatio,
-    val lastUsedAgent: String,
-    val lastActiveAt: Long,
-    val session: String,
-    val cookie: String,
-) {
-    @Serializable
-    data class RelativeRatio(
-        val x: Double,
-        val y: Double,
-    )
-}
 
 @Serializable
 internal data class CreateTabGroupResponse(

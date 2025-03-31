@@ -2,6 +2,7 @@ val kotlin_version: String by project
 val logback_version: String by project
 val mongo_version: String by project
 val kotest_version: String by project
+val arrow_version: String by project
 
 plugins {
     kotlin("jvm") version "2.1.10"
@@ -44,7 +45,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty")
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
-    implementation("io.arrow-kt:arrow-core:2.0.1")
+    implementation("io.arrow-kt:arrow-core:$arrow_version")
     implementation("org.sqids:sqids-kotlin:0.1.1")
 
     testImplementation("io.ktor:ktor-server-test-host")
@@ -53,6 +54,7 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:$kotest_version")
 
     testFixturesImplementation("org.mongodb:bson:$mongo_version")
+    testFixturesImplementation("io.arrow-kt:arrow-core:$arrow_version")
 }
 
 tasks.withType<Test>().configureEach {

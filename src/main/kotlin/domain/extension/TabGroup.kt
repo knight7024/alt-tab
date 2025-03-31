@@ -4,12 +4,14 @@ import com.example.domain.user.UserId
 import java.time.Instant
 
 /**
+ * @param id 인코딩된 탭 그룹 id. 생성할 때마다 달라질 수 있지만 디코딩한 결과는 같다.
  * @param userId 탭 그룹을 생성한 유저 id
  * @param secret E2EE에 사용될 암호화된 시크릿 키
  * @param salt E2EE에 사용될 salt
  * @param tabs 탭 정보들
  */
 data class TabGroup(
+    val id: String,
     val userId: UserId,
     val secret: String,
     val salt: String,

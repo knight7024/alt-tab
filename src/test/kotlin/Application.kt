@@ -101,6 +101,7 @@ private val appConfig =
 
 // dependency
 internal val clock = FakeClock()
+
 internal val userEmailRepository = FakeUserEmailRepository()
 internal val userRepository = FakeUserRepository(clock)
 internal val stashSettingRepository = FakeStashSettingRepository()
@@ -112,7 +113,7 @@ internal val tokenValidator = TokenValidator(appConfig.jwt, clock)
 internal val refreshTokenRepository = FakeRefreshTokenRepository()
 
 internal val hashIdCodec = HashIdCodec(clock)
-internal val tabGroupRepository = FakeTabGroupRepository()
+internal val tabGroupRepository = FakeTabGroupRepository(hashIdCodec)
 
 internal val bootstrapService = BootstrapService(tokenProvider, userRepository, refreshTokenRepository, stashSettingRepository)
 
