@@ -108,6 +108,7 @@ internal fun Application.module() {
         refreshTokenRepository = refreshTokenRepository,
         tabGroupRepository = tabGroupRepository,
         hashIdCodec = hashIdCodec,
+        clock = clock,
     )
 }
 
