@@ -12,6 +12,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
@@ -40,8 +41,13 @@ fun Routing.authorization(
                             stashSettingRepository.init(user.id)
                         }
 
-                return@get call.respond(TokenDto(accessToken.value, refreshToken.value))
+                return@get call.respondRedirect("/oauth/complete#access_token=${accessToken.value}&refresh_token=${refreshToken.value}")
             }
+        }
+
+        // 브라우저 익스텐션에서 팝업으로 띄워진 창의 응답을 확인하기 위해 앵커(#)로 토큰 값을 담아준다.
+        get("/complete") {
+            return@get call.respond(HttpStatusCode.OK)
         }
     }
 
