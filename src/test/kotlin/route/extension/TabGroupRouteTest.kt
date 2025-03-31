@@ -3,7 +3,6 @@ package com.example.route.extension
 import com.example.baseTestApplication
 import com.example.bootstrapService
 import com.example.clock
-import com.example.hashIdCodec
 import com.example.tabGroupRepository
 import domain.extension.TabGroupFixtures
 import io.kotest.core.spec.style.DescribeSpec
@@ -51,51 +50,13 @@ class TabGroupRouteTest :
                                 ),
                             )
                         }
-                    val id = response.body<CreateTabGroupResponse>().id
+
+                    val numericId = tabGroupRepository.findAllByUserId(user.id).first().id
 
                     response.status shouldBe HttpStatusCode.OK
-                    tabGroupRepository.find(id).also {
-                        it shouldBe tabGroup.copy(id = id)
+                    tabGroupRepository.find(numericId).also {
+                        it shouldBe tabGroup.copy(id = numericId)
                     }
-                }
-            }
-
-            describe("탭 그룹 조회") {
-                val (user, accessToken, _) = bootstrapService.signUp()
-                baseTestApplication(accessToken.value) { client ->
-                    // given
-                    val tabGroup = TabGroupFixtures.dummy(userId = user.id)
-                    val id =
-                        client
-                            .post("/tab-group") {
-                                setBody(
-                                    CreateTabGroupRequest(
-                                        secret = tabGroup.secret,
-                                        salt = tabGroup.salt,
-                                        browserTabInfos = tabGroup.tabs.map { it.toDto() },
-                                    ),
-                                )
-                            }.body<CreateTabGroupResponse>()
-                            .id
-
-                    // when
-                    val response = client.get("/tab-group/$id")
-
-                    // then
-                    response.status shouldBe HttpStatusCode.OK
-                    tabGroupRepository.find(id).also {
-                        it?.toDto() shouldBe response.body<TabGroupDto>()
-                    }
-                }
-            }
-
-            describe("존재하지 않는 탭 그룹 조회") {
-                baseTestApplication { client ->
-                    val id = hashIdCodec.encode(0L, clock.instant().plusSeconds(1))
-
-                    val response = client.get("/tab-group/$id")
-
-                    response.status shouldBe HttpStatusCode.NotFound
                 }
             }
 
@@ -104,27 +65,31 @@ class TabGroupRouteTest :
                 baseTestApplication(accessToken.value) { client ->
                     // given
                     val tabGroup = TabGroupFixtures.dummy(userId = user.id)
-                    val id =
-                        client
-                            .post("/tab-group") {
-                                setBody(
-                                    CreateTabGroupRequest(
-                                        secret = tabGroup.secret,
-                                        salt = tabGroup.salt,
-                                        browserTabInfos = tabGroup.tabs.map { it.toDto() },
-                                    ),
-                                )
-                            }.body<CreateTabGroupResponse>()
-                            .id
+                    client
+                        .post("/tab-group") {
+                            setBody(
+                                CreateTabGroupRequest(
+                                    secret = tabGroup.secret,
+                                    salt = tabGroup.salt,
+                                    browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                ),
+                            )
+                        }
+
+                    val numericId = tabGroupRepository.findAllByUserId(user.id).first().id
 
                     // when
                     val response =
                         client.delete("/tab-group") {
-                            setBody(DeleteTabGroupRequest(id = id))
+                            setBody(
+                                DeleteTabGroupRequest(
+                                    id = TabGroupIdHasher.encode(TabGroupId.Persistent(numericId)),
+                                ),
+                            )
                         }
 
                     response.status shouldBe HttpStatusCode.OK
-                    tabGroupRepository.find(id).also {
+                    tabGroupRepository.find(numericId).also {
                         it.shouldBeNull()
                     }
                 }
@@ -148,16 +113,20 @@ class TabGroupRouteTest :
                         }
                 }
                 baseTestApplication(accessToken2.value) { client ->
-                    val id = tabGroupRepository.findAllByUserId(user1.id).first().id
+                    val numericId = tabGroupRepository.findAllByUserId(user1.id).first().id
                     // when
                     val response =
                         client.delete("/tab-group") {
-                            setBody(DeleteTabGroupRequest(id = id))
+                            setBody(
+                                DeleteTabGroupRequest(
+                                    id = TabGroupIdHasher.encode(TabGroupId.Persistent(numericId)),
+                                ),
+                            )
                         }
 
                     // then
                     response.status shouldBe HttpStatusCode.InternalServerError
-                    tabGroupRepository.find(id).also {
+                    tabGroupRepository.find(numericId).also {
                         it.shouldNotBeNull()
                     }
                 }
@@ -168,18 +137,23 @@ class TabGroupRouteTest :
                 baseTestApplication(accessToken.value) { client ->
                     // given
                     val tabGroup = TabGroupFixtures.dummy(userId = user.id)
+                    client
+                        .post("/tab-group") {
+                            setBody(
+                                CreateTabGroupRequest(
+                                    secret = tabGroup.secret,
+                                    salt = tabGroup.salt,
+                                    browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                ),
+                            )
+                        }
                     val id =
-                        client
-                            .post("/tab-group") {
-                                setBody(
-                                    CreateTabGroupRequest(
-                                        secret = tabGroup.secret,
-                                        salt = tabGroup.salt,
-                                        browserTabInfos = tabGroup.tabs.map { it.toDto() },
-                                    ),
-                                )
-                            }.body<CreateTabGroupResponse>()
-                            .id
+                        TabGroupIdHasher
+                            .encode(
+                                TabGroupId.Persistent(
+                                    tabGroupRepository.findAllByUserId(user.id).first().id,
+                                ),
+                            )
 
                     // when
                     val response =
@@ -187,16 +161,58 @@ class TabGroupRouteTest :
                             setBody(
                                 CreateTabGroupQrCodeRequest(
                                     id = id,
-                                    alive = 600,
                                 ),
                             )
                         }
 
                     // then
                     response.status shouldBe HttpStatusCode.OK
-                    hashIdCodec.decode(id).getOrNull()!!.also {
-                        val qrCodeId = hashIdCodec.encode(it, clock.instant() + Duration.ofSeconds(600))
+                    TabGroupIdHasher.decode(id).also {
+                        val qrCodeId =
+                            TabGroupIdHasher
+                                .encode(TabGroupId.Expiring(it.numeric, clock.instant().plusSeconds(600)))
                         response.body<CreateTabGroupQrCodeResponse>().path shouldBe "/tab-group/$qrCodeId"
+                    }
+                }
+            }
+
+            describe("QR 코드로 탭 그룹 조회") {
+                val (user, accessToken, _) = bootstrapService.signUp()
+                baseTestApplication(accessToken.value) { client ->
+                    // given
+                    val tabGroup = TabGroupFixtures.dummy(userId = user.id)
+                    client
+                        .post("/tab-group") {
+                            setBody(
+                                CreateTabGroupRequest(
+                                    secret = tabGroup.secret,
+                                    salt = tabGroup.salt,
+                                    browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                ),
+                            )
+                        }
+
+                    val numericId = tabGroupRepository.findAllByUserId(user.id).first().id
+                    val id = TabGroupIdHasher.encode(TabGroupId.Persistent(numericId))
+
+                    val qrPath =
+                        client
+                            .post("/tab-group/qr-code") {
+                                setBody(
+                                    CreateTabGroupQrCodeRequest(
+                                        id = id,
+                                    ),
+                                )
+                            }.body<CreateTabGroupQrCodeResponse>()
+                            .path
+
+                    // when
+                    val response = client.get(qrPath)
+
+                    // then
+                    response.status shouldBe HttpStatusCode.OK
+                    tabGroupRepository.find(numericId).also {
+                        it?.toDto() shouldBe response.body<TabGroupDto>()
                     }
                 }
             }
@@ -225,8 +241,7 @@ class TabGroupRouteTest :
                         client.post("/tab-group/qr-code") {
                             setBody(
                                 CreateTabGroupQrCodeRequest(
-                                    id = id,
-                                    alive = 600,
+                                    id = TabGroupIdHasher.encode(TabGroupId.Persistent(id)),
                                 ),
                             )
                         }
@@ -241,18 +256,23 @@ class TabGroupRouteTest :
                 baseTestApplication(accessToken.value) { client ->
                     // given
                     val tabGroup = TabGroupFixtures.dummy(userId = user.id)
+                    client
+                        .post("/tab-group") {
+                            setBody(
+                                CreateTabGroupRequest(
+                                    secret = tabGroup.secret,
+                                    salt = tabGroup.salt,
+                                    browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                ),
+                            )
+                        }
+
                     val id =
-                        client
-                            .post("/tab-group") {
-                                setBody(
-                                    CreateTabGroupRequest(
-                                        secret = tabGroup.secret,
-                                        salt = tabGroup.salt,
-                                        browserTabInfos = tabGroup.tabs.map { it.toDto() },
-                                    ),
-                                )
-                            }.body<CreateTabGroupResponse>()
-                            .id
+                        TabGroupIdHasher.encode(
+                            TabGroupId.Persistent(
+                                tabGroupRepository.findAllByUserId(user.id).first().id,
+                            ),
+                        )
 
                     val qrPath =
                         client
@@ -260,15 +280,46 @@ class TabGroupRouteTest :
                                 setBody(
                                     CreateTabGroupQrCodeRequest(
                                         id = id,
-                                        alive = 600,
                                     ),
                                 )
                             }.body<CreateTabGroupQrCodeResponse>()
+                            .path
 
                     clock.tick(Duration.ofSeconds(600))
 
                     // when
-                    val response = client.get(qrPath.path)
+                    val response = client.get(qrPath)
+
+                    // then
+                    response.status shouldBe HttpStatusCode.NotFound
+                }
+            }
+
+            describe("QR 코드를 통하지 않고 탭 그룹 조회") {
+                val (user, accessToken, _) = bootstrapService.signUp()
+                baseTestApplication(accessToken.value) { client ->
+                    // given
+                    val tabGroup = TabGroupFixtures.dummy(userId = user.id)
+                    client
+                        .post("/tab-group") {
+                            setBody(
+                                CreateTabGroupRequest(
+                                    secret = tabGroup.secret,
+                                    salt = tabGroup.salt,
+                                    browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                ),
+                            )
+                        }
+
+                    val id =
+                        TabGroupIdHasher.encode(
+                            TabGroupId.Persistent(
+                                tabGroupRepository.findAllByUserId(user.id).first().id,
+                            ),
+                        )
+
+                    // when
+                    val response = client.get("/tab-group/$id")
 
                     // then
                     response.status shouldBe HttpStatusCode.NotFound
