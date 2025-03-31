@@ -87,6 +87,12 @@ private val appConfig =
                 database = secretConfig.tryGetString("mongodb-stash-setting.database")!!,
                 collection = secretConfig.tryGetString("mongodb-stash-setting.collection")!!,
             ),
+        mongoCounter =
+            MongoConfig(
+                uri = secretConfig.tryGetString("mongodb-counter.uri")!!,
+                database = secretConfig.tryGetString("mongodb-counter.database")!!,
+                collection = secretConfig.tryGetString("mongodb-counter.collection")!!,
+            ),
         oAuthGoogle =
             OAuthConfig(
                 clientId = secretConfig.tryGetString("oauth-google.client-id")!!,
