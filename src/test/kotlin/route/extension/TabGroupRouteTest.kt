@@ -294,5 +294,36 @@ class TabGroupRouteTest :
                     response.status shouldBe HttpStatusCode.NotFound
                 }
             }
+
+            describe("QR 코드를 통하지 않고 탭 그룹 조회") {
+                val (user, accessToken, _) = bootstrapService.signUp()
+                baseTestApplication(accessToken.value) { client ->
+                    // given
+                    val tabGroup = TabGroupFixtures.dummy(userId = user.id)
+                    client
+                        .post("/tab-group") {
+                            setBody(
+                                CreateTabGroupRequest(
+                                    secret = tabGroup.secret,
+                                    salt = tabGroup.salt,
+                                    browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                ),
+                            )
+                        }
+
+                    val id =
+                        TabGroupIdHasher.encode(
+                            TabGroupId.Persistent(
+                                tabGroupRepository.findAllByUserId(user.id).first().id,
+                            ),
+                        )
+
+                    // when
+                    val response = client.get("/tab-group/$id")
+
+                    // then
+                    response.status shouldBe HttpStatusCode.NotFound
+                }
+            }
         }
     })
