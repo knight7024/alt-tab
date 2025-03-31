@@ -89,38 +89,6 @@ class TabGroupRouteTest :
                 }
             }
 
-            describe("만료된 qr 코드로 탭 그룹 조회") {
-                val (user, accessToken, _) = bootstrapService.signUp()
-                baseTestApplication(accessToken.value) { client ->
-                    // given
-                    val tabGroup = TabGroupFixtures.dummy(userId = user.id)
-                    val id =
-                        client
-                            .post("/tab-group") {
-                                setBody(
-                                    CreateTabGroupRequest(
-                                        secret = tabGroup.secret,
-                                        salt = tabGroup.salt,
-                                        browserTabInfos = tabGroup.tabs.map { it.toDto() },
-                                    ),
-                                )
-                            }.body<CreateTabGroupResponse>()
-                            .id
-                            .let { hashIdCodec.decode(it) }
-                            .also { it.isRight() shouldBe true }
-                            .getOrNull()!!
-
-                    val expiresId = hashIdCodec.encode(id, clock.instant().plusSeconds(1))
-                    clock.tick(Duration.ofSeconds(1))
-
-                    // when
-                    val response = client.get("/tab-group/$expiresId")
-
-                    // then
-                    response.status shouldBe HttpStatusCode.NotFound
-                }
-            }
-
             describe("존재하지 않는 탭 그룹 조회") {
                 baseTestApplication { client ->
                     val id = hashIdCodec.encode(0L, clock.instant().plusSeconds(1))
@@ -265,6 +233,45 @@ class TabGroupRouteTest :
 
                     // then
                     response.status shouldBe HttpStatusCode.InternalServerError
+                }
+            }
+
+            describe("만료된 QR 코드로 탭 그룹 조회") {
+                val (user, accessToken, _) = bootstrapService.signUp()
+                baseTestApplication(accessToken.value) { client ->
+                    // given
+                    val tabGroup = TabGroupFixtures.dummy(userId = user.id)
+                    val id =
+                        client
+                            .post("/tab-group") {
+                                setBody(
+                                    CreateTabGroupRequest(
+                                        secret = tabGroup.secret,
+                                        salt = tabGroup.salt,
+                                        browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                    ),
+                                )
+                            }.body<CreateTabGroupResponse>()
+                            .id
+
+                    val qrPath =
+                        client
+                            .post("/tab-group/qr-code") {
+                                setBody(
+                                    CreateTabGroupQrCodeRequest(
+                                        id = id,
+                                        alive = 600,
+                                    ),
+                                )
+                            }.body<CreateTabGroupQrCodeResponse>()
+
+                    clock.tick(Duration.ofSeconds(600))
+
+                    // when
+                    val response = client.get(qrPath.path)
+
+                    // then
+                    response.status shouldBe HttpStatusCode.NotFound
                 }
             }
         }
