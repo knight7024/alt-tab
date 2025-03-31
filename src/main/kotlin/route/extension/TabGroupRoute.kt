@@ -11,6 +11,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -45,6 +46,22 @@ fun Routing.tabGroup(tabGroupRepository: TabGroupRepository) {
                         )
 
                 return@post call.respond(CreateTabGroupResponse(tabGroupId))
+            }
+
+            delete {
+                val user = call.authenticatedUser()
+                val tabGroup =
+                    call
+                        .receive<DeleteTabGroupRequest>()
+                        .id
+                        .let { tabGroupRepository.find(it) }
+
+                checkNotNull(tabGroup)
+                check(tabGroup.userId == user.id)
+
+                tabGroupRepository.remove(tabGroup.id)
+
+                return@delete call.respond(HttpStatusCode.OK)
             }
 
             // TODO: QR 발급 API
@@ -152,5 +169,10 @@ internal data class CreateTabGroupRequest(
 
 @Serializable
 internal data class CreateTabGroupResponse(
+    val id: String,
+)
+
+@Serializable
+internal data class DeleteTabGroupRequest(
     val id: String,
 )

@@ -35,4 +35,8 @@ class FakeTabGroupRepository(
             return encodedId
         }
     }
+
+    override suspend fun remove(id: String) {
+        hashIdCodec.decode(id).getOrNull()?.let { tabGroups.remove(it) }
+    }
 }

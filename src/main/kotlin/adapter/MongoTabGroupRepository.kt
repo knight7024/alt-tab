@@ -24,17 +24,15 @@ class MongoTabGroupRepository(
             .mapLeft { null }
             .map {
                 dao
-                    .find(
-                        Filters.eq(TabGroupDocument.FIELD_ID, id),
-                    ).first()
+                    .find(Filters.eq(TabGroupDocument.FIELD_ID, id))
+                    .first()
                     ?.toDomain()
             }.merge()
 
     override suspend fun findAllByUserId(userId: UserId): List<TabGroup> =
         dao
-            .find(
-                Filters.eq(TabGroupDocument.FIELD_USER_ID, userId.value),
-            ).map { it.toDomain() }
+            .find(Filters.eq(TabGroupDocument.FIELD_USER_ID, userId.value))
+            .map { it.toDomain() }
             .toList()
 
     override suspend fun save(
@@ -57,6 +55,13 @@ class MongoTabGroupRepository(
             ),
         )
         return hashIdCodec.encode(id)
+    }
+
+    override suspend fun remove(id: String) {
+        hashIdCodec
+            .decode(id)
+            .getOrNull()
+            ?.let { dao.deleteOne(Filters.eq(TabGroupDocument.FIELD_ID, it)) }
     }
 
     private fun TabGroupDocument.toDomain() =

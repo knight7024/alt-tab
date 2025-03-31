@@ -7,8 +7,11 @@ import com.example.hashIdCodec
 import com.example.tabGroupRepository
 import domain.extension.TabGroupFixtures
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -125,6 +128,70 @@ class TabGroupRouteTest :
                     val response = client.get("/tab-group/$id")
 
                     response.status shouldBe HttpStatusCode.NotFound
+                }
+            }
+
+            describe("나의 탭 그룹 삭제") {
+                val (user, accessToken, _) = bootstrapService.signUp()
+                baseTestApplication(accessToken.value) { client ->
+                    // given
+                    val tabGroup = TabGroupFixtures.dummy(userId = user.id)
+                    val id =
+                        client
+                            .post("/tab-group") {
+                                setBody(
+                                    CreateTabGroupRequest(
+                                        secret = tabGroup.secret,
+                                        salt = tabGroup.salt,
+                                        browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                    ),
+                                )
+                            }.body<CreateTabGroupResponse>()
+                            .id
+
+                    // when
+                    val response =
+                        client.delete("/tab-group") {
+                            setBody(DeleteTabGroupRequest(id = id))
+                        }
+
+                    response.status shouldBe HttpStatusCode.OK
+                    tabGroupRepository.find(id).also {
+                        it.shouldBeNull()
+                    }
+                }
+            }
+
+            describe("남의 탭 그룹 삭제") {
+                val (user1, accessToken1, _) = bootstrapService.signUp()
+                val (_, accessToken2, _) = bootstrapService.signUp()
+                baseTestApplication(accessToken1.value) { client ->
+                    // given
+                    val tabGroup = TabGroupFixtures.dummy(userId = user1.id)
+                    client
+                        .post("/tab-group") {
+                            setBody(
+                                CreateTabGroupRequest(
+                                    secret = tabGroup.secret,
+                                    salt = tabGroup.salt,
+                                    browserTabInfos = tabGroup.tabs.map { it.toDto() },
+                                ),
+                            )
+                        }
+                }
+                baseTestApplication(accessToken2.value) { client ->
+                    val id = tabGroupRepository.findAllByUserId(user1.id).first().id
+                    // when
+                    val response =
+                        client.delete("/tab-group") {
+                            setBody(DeleteTabGroupRequest(id = id))
+                        }
+
+                    // then
+                    response.status shouldBe HttpStatusCode.InternalServerError
+                    tabGroupRepository.find(id).also {
+                        it.shouldNotBeNull()
+                    }
                 }
             }
         }

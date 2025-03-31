@@ -16,4 +16,6 @@ interface TabGroupRepository {
         salt: String,
         tabs: Collection<BrowserTabInfo>,
     ): String
+
+    suspend fun remove(id: String)
 }
