@@ -10,10 +10,10 @@ import com.mongodb.client.model.Filters
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
-import kotlin.random.Random
 
 class MongoTabGroupRepository(
     private val dao: MongoCollection<TabGroupDocument>,
+    private val generateTabGroupId: GenerateTabGroupId,
 ) : TabGroupRepository {
     override suspend fun find(id: Long): TabGroup? =
         dao
@@ -35,11 +35,9 @@ class MongoTabGroupRepository(
             chunk해서 저장하거나, 사이즈 제한을 걸어야 할 수도 있다. */
         tabs: Collection<BrowserTabInfo>,
     ) {
-        // TODO: counter collection 구현
-        val id = Random.nextLong(1, Long.MAX_VALUE)
         dao.insertOne(
             TabGroupDocument(
-                id = id,
+                id = generateTabGroupId(),
                 userId = userId.value,
                 secret = secret,
                 salt = salt,
