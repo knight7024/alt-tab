@@ -16,7 +16,7 @@ import java.util.UUID
 
 class AuthRouteTest :
     DescribeSpec({
-        afterTest {
+        beforeTest {
             clock.reset()
         }
 
