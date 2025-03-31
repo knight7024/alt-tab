@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.adapter.GenerateTabGroupId
 import com.example.adapter.GoogleClient
 import com.example.adapter.MongoRefreshTokenRepository
 import com.example.adapter.MongoStashSettingRepository
@@ -17,6 +18,7 @@ import com.example.module.configureHTTP
 import com.example.module.configureRouting
 import com.example.module.configureSecurity
 import com.example.module.configureSerialization
+import com.example.module.counterDao
 import com.example.module.refreshTokenDao
 import com.example.module.stashSettingDao
 import com.example.module.tabGroupDao
@@ -55,15 +57,21 @@ internal fun Application.module() {
                 ),
             mongoTabGroup =
                 MongoConfig(
-                    uri = secretConfig.tryGetString("mongodb-tab-group.uri")!!,
-                    database = secretConfig.tryGetString("mongodb-tab-group.database")!!,
-                    collection = secretConfig.tryGetString("mongodb-tab-group.collection")!!,
+                    uri = secretConfig.tryGetString("mongodb-tab-groups.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-tab-groups.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-tab-groups.collection")!!,
                 ),
             mongoStashSetting =
                 MongoConfig(
-                    uri = secretConfig.tryGetString("mongodb-stash-setting.uri")!!,
-                    database = secretConfig.tryGetString("mongodb-stash-setting.database")!!,
-                    collection = secretConfig.tryGetString("mongodb-stash-setting.collection")!!,
+                    uri = secretConfig.tryGetString("mongodb-stash-settings.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-stash-settings.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-stash-settings.collection")!!,
+                ),
+            mongoCounter =
+                MongoConfig(
+                    uri = secretConfig.tryGetString("mongodb-counters.uri")!!,
+                    database = secretConfig.tryGetString("mongodb-counters.database")!!,
+                    collection = secretConfig.tryGetString("mongodb-counters.collection")!!,
                 ),
             oAuthGoogle =
                 OAuthConfig(
@@ -88,7 +96,8 @@ internal fun Application.module() {
     val tokenValidator = TokenValidator(appConfig.jwt, clock)
     val refreshTokenRepository = MongoRefreshTokenRepository(refreshTokenDao(appConfig.mongoRefreshToken))
 
-    val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup))
+    val generateTabGroupId = GenerateTabGroupId(counterDao(appConfig.mongoCounter))
+    val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup), generateTabGroupId)
 
     // configure
     configureSecurity(

@@ -1,5 +1,6 @@
 package com.example.module
 
+import com.example.adapter.CounterDocument
 import com.example.adapter.RefreshTokenDocument
 import com.example.adapter.StashSettingDocument
 import com.example.adapter.TabGroupDocument
@@ -91,4 +92,24 @@ internal fun Application.stashSettingDao(mongoConfig: MongoConfig): MongoCollect
     return mongoClient
         .getDatabase(mongoConfig.database)
         .getCollection(mongoConfig.collection, StashSettingDocument::class.java)
+}
+
+internal fun Application.counterDao(mongoConfig: MongoConfig): MongoCollection<CounterDocument> {
+    val mongoClient =
+        MongoClientSettings
+            .builder()
+            .applyConnectionString(ConnectionString(mongoConfig.uri))
+            .applyToConnectionPoolSettings {
+                it.maxWaitTime(5, TimeUnit.SECONDS)
+                it.maxConnectionIdleTime(10, TimeUnit.SECONDS)
+            }.build()
+            .let { MongoClients.create(it) }
+
+    monitor.subscribe(ApplicationStopped) {
+        mongoClient.close()
+    }
+
+    return mongoClient
+        .getDatabase(mongoConfig.database)
+        .getCollection(mongoConfig.collection, CounterDocument::class.java)
 }
