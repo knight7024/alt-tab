@@ -271,7 +271,7 @@ class TabGroupRouteTest :
                     val response = client.get(qrPath)
 
                     // then
-                    response.status shouldBe HttpStatusCode.InternalServerError
+                    response.status shouldBe HttpStatusCode.NotFound
                 }
             }
         }

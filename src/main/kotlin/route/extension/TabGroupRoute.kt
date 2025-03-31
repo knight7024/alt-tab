@@ -97,12 +97,16 @@ fun Routing.tabGroup(
     get("/tab-group/{id}") {
         val id = call.parameters["id"]!!
         val numericId =
-            HashIdCodec
-                .decode(id)
-                .also {
-                    check(it.size == 2)
-                    check(clock.instant().epochSecond < it[1])
-                }.first()
+            runCatching {
+                HashIdCodec
+                    .decode(id)
+                    .also {
+                        check(it.size == 2)
+                        check(clock.instant().epochSecond < it[1])
+                    }.first()
+            }.onFailure {
+                return@get call.respond(HttpStatusCode.NotFound)
+            }.getOrNull()!!
 
         val tabGroup =
             tabGroupRepository.find(numericId)
