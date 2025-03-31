@@ -3,7 +3,8 @@ package com.example.route.extension
 import com.example.baseTestApplication
 import com.example.bootstrapService
 import com.example.clock
-import com.example.domain.extension.HashIdCodec
+import com.example.domain.extension.TabGroupId
+import com.example.domain.extension.TabGroupIdHasher
 import com.example.tabGroupRepository
 import domain.extension.TabGroupFixtures
 import io.kotest.core.spec.style.DescribeSpec
@@ -82,7 +83,11 @@ class TabGroupRouteTest :
                     // when
                     val response =
                         client.delete("/tab-group") {
-                            setBody(DeleteTabGroupRequest(id = HashIdCodec.encode(numericId)))
+                            setBody(
+                                DeleteTabGroupRequest(
+                                    id = TabGroupIdHasher.encode(TabGroupId.Persistent(numericId)),
+                                ),
+                            )
                         }
 
                     response.status shouldBe HttpStatusCode.OK
@@ -114,7 +119,11 @@ class TabGroupRouteTest :
                     // when
                     val response =
                         client.delete("/tab-group") {
-                            setBody(DeleteTabGroupRequest(id = HashIdCodec.encode(numericId)))
+                            setBody(
+                                DeleteTabGroupRequest(
+                                    id = TabGroupIdHasher.encode(TabGroupId.Persistent(numericId)),
+                                ),
+                            )
                         }
 
                     // then
@@ -140,7 +149,13 @@ class TabGroupRouteTest :
                                 ),
                             )
                         }
-                    val id = HashIdCodec.encode(tabGroupRepository.findAllByUserId(user.id).first().id)
+                    val id =
+                        TabGroupIdHasher
+                            .encode(
+                                TabGroupId.Persistent(
+                                    tabGroupRepository.findAllByUserId(user.id).first().id,
+                                ),
+                            )
 
                     // when
                     val response =
@@ -154,8 +169,10 @@ class TabGroupRouteTest :
 
                     // then
                     response.status shouldBe HttpStatusCode.OK
-                    HashIdCodec.decode(id).also {
-                        val qrCodeId = HashIdCodec.encode(it.first(), clock.instant().plusSeconds(600))
+                    TabGroupIdHasher.decode(id).also {
+                        val qrCodeId =
+                            TabGroupIdHasher
+                                .encode(TabGroupId.Expiring(it.numeric, clock.instant().plusSeconds(600)))
                         response.body<CreateTabGroupQrCodeResponse>().path shouldBe "/tab-group/$qrCodeId"
                     }
                 }
@@ -178,7 +195,7 @@ class TabGroupRouteTest :
                         }
 
                     val numericId = tabGroupRepository.findAllByUserId(user.id).first().id
-                    val id = HashIdCodec.encode(numericId)
+                    val id = TabGroupIdHasher.encode(TabGroupId.Persistent(numericId))
 
                     val qrPath =
                         client
@@ -226,7 +243,7 @@ class TabGroupRouteTest :
                         client.post("/tab-group/qr-code") {
                             setBody(
                                 CreateTabGroupQrCodeRequest(
-                                    id = HashIdCodec.encode(id),
+                                    id = TabGroupIdHasher.encode(TabGroupId.Persistent(id)),
                                 ),
                             )
                         }
@@ -252,7 +269,12 @@ class TabGroupRouteTest :
                             )
                         }
 
-                    val id = HashIdCodec.encode(tabGroupRepository.findAllByUserId(user.id).first().id)
+                    val id =
+                        TabGroupIdHasher.encode(
+                            TabGroupId.Persistent(
+                                tabGroupRepository.findAllByUserId(user.id).first().id,
+                            ),
+                        )
 
                     val qrPath =
                         client

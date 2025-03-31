@@ -1,9 +1,10 @@
 package com.example.route.extension
 
 import com.example.domain.extension.BrowserTabInfo
-import com.example.domain.extension.HashIdCodec
 import com.example.domain.extension.RelativeRatio
 import com.example.domain.extension.TabGroup
+import com.example.domain.extension.TabGroupId
+import com.example.domain.extension.TabGroupIdHasher
 import com.example.domain.extension.TabGroupRepository
 import com.example.module.authenticatedUser
 import io.ktor.http.HttpStatusCode
@@ -58,9 +59,9 @@ fun Routing.tabGroup(
 
                 val numericId =
                     request.id
-                        .let { HashIdCodec.decode(it) }
-                        .also { check(it.size == 1) }
-                        .first()
+                        .let { TabGroupIdHasher.decode(it) }
+                        .also { check(it is TabGroupId.Persistent) }
+                        .numeric
                 val tabGroup = tabGroupRepository.find(numericId)
 
                 checkNotNull(tabGroup)
@@ -77,16 +78,16 @@ fun Routing.tabGroup(
 
                 val numericId =
                     request.id
-                        .let { HashIdCodec.decode(it) }
-                        .also { check(it.size == 1) }
-                        .first()
+                        .let { TabGroupIdHasher.decode(it) }
+                        .also { check(it is TabGroupId.Persistent) }
+                        .numeric
                 val tabGroup =
                     tabGroupRepository.find(numericId)
                         ?: return@post call.respond(HttpStatusCode.NotFound)
 
                 check(tabGroup.userId == user.id)
 
-                val qrCodeId = HashIdCodec.encode(numericId, clock.instant().plusSeconds(600))
+                val qrCodeId = TabGroupIdHasher.encode(TabGroupId.Expiring(numericId, clock.instant().plusSeconds(600)))
 
                 return@post call.respond(CreateTabGroupQrCodeResponse("/tab-group/$qrCodeId"))
             }
@@ -98,12 +99,12 @@ fun Routing.tabGroup(
         val id = call.parameters["id"]!!
         val numericId =
             runCatching {
-                HashIdCodec
+                TabGroupIdHasher
                     .decode(id)
                     .also {
-                        check(it.size == 2)
-                        check(clock.instant().epochSecond < it[1])
-                    }.first()
+                        check(it is TabGroupId.Expiring)
+                        check(clock.instant() < it.expiresAt)
+                    }.numeric
             }.onFailure {
                 return@get call.respond(HttpStatusCode.NotFound)
             }.getOrNull()!!
@@ -119,7 +120,7 @@ fun Routing.tabGroup(
 @VisibleForTesting
 internal fun TabGroup.toDto() =
     TabGroupDto(
-        id = HashIdCodec.encode(id),
+        id = TabGroupIdHasher.encode(TabGroupId.Persistent(id)),
         secret = secret,
         salt = salt,
         browserTabInfos = tabs.map { it.toDto() },
