@@ -33,6 +33,7 @@ fun Routing.tabGroup(
                         .findAllByUserId(user.id)
                         .map { it.toDto() }
 
+                // TODO: 페이지네이션 필요
                 return@get call.respond(tabGroups)
             }
 
@@ -200,11 +201,6 @@ internal data class CreateTabGroupRequest(
     val secret: String,
     val salt: String,
     val browserTabInfos: List<BrowserTabInfoDto>,
-)
-
-@Serializable
-internal data class CreateTabGroupResponse(
-    val id: String,
 )
 
 @Serializable
