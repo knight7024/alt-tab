@@ -14,6 +14,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import java.time.Clock
 
 internal fun Application.configureRouting(
     userAuthorizationService: UserAuthorizationService,
@@ -23,6 +24,7 @@ internal fun Application.configureRouting(
     refreshTokenRepository: RefreshTokenRepository,
     tabGroupRepository: TabGroupRepository,
     hashIdCodec: HashIdCodec,
+    clock: Clock,
 ) {
     routing {
         get("/") {
@@ -43,6 +45,8 @@ internal fun Application.configureRouting(
 
         tabGroup(
             tabGroupRepository = tabGroupRepository,
+            hashIdCodec = hashIdCodec,
+            clock = clock,
         )
     }
 }

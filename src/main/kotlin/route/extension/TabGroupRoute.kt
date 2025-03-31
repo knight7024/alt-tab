@@ -1,6 +1,8 @@
 package com.example.route.extension
 
 import com.example.domain.extension.BrowserTabInfo
+import com.example.domain.extension.HashIdCodec
+import com.example.domain.extension.QRExpiry
 import com.example.domain.extension.RelativeRatio
 import com.example.domain.extension.TabGroup
 import com.example.domain.extension.TabGroupRepository
@@ -17,9 +19,14 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.VisibleForTesting
+import java.time.Clock
 import java.time.Instant
 
-fun Routing.tabGroup(tabGroupRepository: TabGroupRepository) {
+fun Routing.tabGroup(
+    tabGroupRepository: TabGroupRepository,
+    hashIdCodec: HashIdCodec,
+    clock: Clock,
+) {
     authenticate("auth-bearer", strategy = AuthenticationStrategy.Required) {
         route("/tab-group") {
             get {
@@ -64,7 +71,22 @@ fun Routing.tabGroup(tabGroupRepository: TabGroupRepository) {
                 return@delete call.respond(HttpStatusCode.OK)
             }
 
-            // TODO: QR 발급 API
+            post("/qr-code") {
+                val user = call.authenticatedUser()
+                val request = call.receive<CreateTabGroupQrCodeRequest>()
+                val qrExpiry = QRExpiry.of(request.alive)
+
+                val tabGroup =
+                    tabGroupRepository.find(request.id)
+                        ?: return@post call.respond(HttpStatusCode.NotFound)
+
+                check(tabGroup.userId == user.id)
+
+                val numericId = hashIdCodec.decode(tabGroup.id).getOrNull()!!
+                val qrCodeId = hashIdCodec.encode(numericId, clock.instant() + qrExpiry.duration)
+
+                return@post call.respond(CreateTabGroupQrCodeResponse("/tab-group/$qrCodeId"))
+            }
         }
     }
 
@@ -175,4 +197,15 @@ internal data class CreateTabGroupResponse(
 @Serializable
 internal data class DeleteTabGroupRequest(
     val id: String,
+)
+
+@Serializable
+internal data class CreateTabGroupQrCodeRequest(
+    val id: String,
+    val alive: Long,
+)
+
+@Serializable
+internal data class CreateTabGroupQrCodeResponse(
+    val path: String,
 )
