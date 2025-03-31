@@ -12,8 +12,13 @@ class HashIdCodec(
 ) {
     fun encode(
         id: Long,
-        expiresAt: Instant,
-    ): String = squids.encode(listOf(id, expiresAt.epochSecond))
+        expiresAt: Instant? = null,
+    ): String =
+        if (expiresAt == null) {
+            squids.encode(listOf(id))
+        } else {
+            squids.encode(listOf(id, expiresAt.epochSecond))
+        }
 
     // Decoding IDs will usually produce some kind of numeric output,
     // but that doesn't necessarily mean that the ID is canonical.
@@ -24,7 +29,9 @@ class HashIdCodec(
                 .decode(id)
                 .also {
                     check(squids.encode(it) == id)
-                    check(clock.millis() / 1000 < it[1])
+                    if (it.size == 2) {
+                        check(clock.instant().epochSecond < it[1])
+                    }
                 }.first()
         }.mapLeft { }
 

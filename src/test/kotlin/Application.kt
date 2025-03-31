@@ -4,6 +4,7 @@ import BootstrapService
 import FakeClock
 import adapter.FakeRefreshTokenRepository
 import adapter.FakeStashSettingRepository
+import adapter.FakeTabGroupRepository
 import adapter.FakeUserEmailRepository
 import adapter.FakeUserRepository
 import com.example.config.AppConfig
@@ -11,6 +12,7 @@ import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
+import com.example.domain.extension.HashIdCodec
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
 import com.example.domain.user.UserAuthorizationService
@@ -45,6 +47,8 @@ private fun Application.testModule() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
+        tabGroupRepository = tabGroupRepository,
+        hashIdCodec = hashIdCodec,
     )
 }
 
@@ -108,6 +112,8 @@ internal val tokenValidator = TokenValidator(appConfig.jwt, clock)
 internal val refreshTokenRepository = FakeRefreshTokenRepository()
 
 internal val hashIdCodec = HashIdCodec(clock)
+internal val tabGroupRepository = FakeTabGroupRepository()
+
 internal val bootstrapService = BootstrapService(tokenProvider, userRepository, refreshTokenRepository, stashSettingRepository)
 
 internal fun baseTestApplication(

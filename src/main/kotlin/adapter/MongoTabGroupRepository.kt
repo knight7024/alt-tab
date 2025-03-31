@@ -15,12 +15,12 @@ import kotlin.random.Random
 class MongoTabGroupRepository(
     private val dao: MongoCollection<TabGroupDocument>,
 ) : TabGroupRepository {
-    override suspend fun find(id: Long): TabGroup =
+    override suspend fun find(id: Long): TabGroup? =
         dao
             .find(
                 Filters.eq(TabGroupDocument.FIELD_ID, id),
-            ).first()!!
-            .toDomain()
+            ).first()
+            ?.toDomain()
 
     override suspend fun save(
         userId: UserId,
@@ -29,7 +29,7 @@ class MongoTabGroupRepository(
         /* TODO: 양이 많을 수도, 사이즈가 클 수도 있다.
             chunk해서 저장하거나, 사이즈 제한을 걸어야 할 수도 있다. */
         tabs: Collection<BrowserTabInfo>,
-    ) {
+    ): Long {
         // TODO: counter collection 구현
         val id = Random.nextLong(1, Long.MAX_VALUE)
         dao.insertOne(
@@ -41,6 +41,7 @@ class MongoTabGroupRepository(
                 tabs = tabs.map { it.toDocument() },
             ),
         )
+        return id
     }
 
     private fun TabGroupDocument.toDomain() =

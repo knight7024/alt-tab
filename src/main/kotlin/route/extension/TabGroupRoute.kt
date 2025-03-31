@@ -17,6 +17,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
+import org.jetbrains.annotations.VisibleForTesting
 import java.time.Instant
 
 fun Routing.tabGroup(
@@ -29,31 +30,41 @@ fun Routing.tabGroup(
                 val user = call.authenticatedUser()
                 val tabGroup = call.receive<TabGroupDto>()
 
-                tabGroupRepository.save(
-                    userId = user.id,
-                    secret = tabGroup.secret,
-                    salt = tabGroup.salt,
-                    tabs = tabGroup.browserTabInfos.map { it.toDomain() },
-                )
-            }
+                val tabGroupId =
+                    tabGroupRepository
+                        .save(
+                            userId = user.id,
+                            secret = tabGroup.secret,
+                            salt = tabGroup.salt,
+                            tabs = tabGroup.browserTabInfos.map { it.toDomain() },
+                        ).let {
+                            hashIdCodec.encode(it)
+                        }
 
-            get("/{id}") {
-                val id =
-                    call.parameters["id"]!!
-                        .let { hashIdCodec.decode(it) }
-                        .getOrElse { return@get call.respond(HttpStatusCode.NotFound) }
-
-                val tabGroup = tabGroupRepository.find(id)
-
-                return@get call.respond(tabGroup.toDto())
+                return@post call.respond(CreateTabGroupResponse(tabGroupId))
             }
 
             // TODO: QR 발급 API
         }
     }
+
+    // QR 코드를 통해 접근하는 경우라서 인증이 필요 없다.
+    get("/tab-group/{id}") {
+        val id =
+            call.parameters["id"]!!
+                .let { hashIdCodec.decode(it) }
+                .getOrElse { return@get call.respond(HttpStatusCode.NotFound) }
+
+        val tabGroup =
+            tabGroupRepository.find(id)
+                ?: return@get call.respond(HttpStatusCode.NotFound)
+
+        return@get call.respond(tabGroup.toDto())
+    }
 }
 
-private fun TabGroup.toDto() =
+@VisibleForTesting
+internal fun TabGroup.toDto() =
     TabGroupDto(
         secret = secret,
         salt = salt,
@@ -128,3 +139,8 @@ internal data class BrowserTabInfoDto(
         val y: Double,
     )
 }
+
+@Serializable
+internal data class CreateTabGroupResponse(
+    val id: String,
+)
