@@ -10,21 +10,19 @@ import java.util.UUID
 import kotlin.random.Random
 
 object TabGroupFixtures {
-    fun dummy(
-        id: String = UUID.randomUUID().toString(),
-        userId: UserId,
-    ) = TabGroup(
-        id = id,
-        userId = userId,
-        secret = UUID.randomUUID().toString(),
-        salt = UUID.randomUUID().toString(),
-        tabs =
-            mutableListOf<BrowserTabInfo>().also { list ->
-                repeat(Random.nextInt(0, 3)) {
-                    list += dummyBrowserTabInfo()
-                }
-            },
-    )
+    fun dummy(userId: UserId) =
+        TabGroup(
+            id = Random.nextLong(1, Long.MAX_VALUE),
+            userId = userId,
+            secret = UUID.randomUUID().toString(),
+            salt = UUID.randomUUID().toString(),
+            tabs =
+                mutableListOf<BrowserTabInfo>().also { list ->
+                    repeat(Random.nextInt(0, 3)) {
+                        list += dummyBrowserTabInfo()
+                    }
+                },
+        )
 
     fun dummyBrowserTabInfo() =
         BrowserTabInfo(

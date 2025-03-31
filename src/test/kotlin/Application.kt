@@ -12,7 +12,6 @@ import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
 import com.example.config.UrlConfig
-import com.example.domain.extension.HashIdCodec
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
 import com.example.domain.user.UserAuthorizationService
@@ -48,7 +47,6 @@ private fun Application.testModule() {
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
         tabGroupRepository = tabGroupRepository,
-        hashIdCodec = hashIdCodec,
         clock = clock,
     )
 }
@@ -113,8 +111,7 @@ internal val tokenProvider = TokenProvider(appConfig.jwt, clock)
 internal val tokenValidator = TokenValidator(appConfig.jwt, clock)
 internal val refreshTokenRepository = FakeRefreshTokenRepository()
 
-internal val hashIdCodec = HashIdCodec(clock)
-internal val tabGroupRepository = FakeTabGroupRepository(hashIdCodec)
+internal val tabGroupRepository = FakeTabGroupRepository()
 
 internal val bootstrapService = BootstrapService(tokenProvider, userRepository, refreshTokenRepository, stashSettingRepository)
 
