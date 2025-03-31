@@ -10,6 +10,8 @@ tags:
     description: 스태시 설정 관련 API
   - name: AuthRoute
     description: 인증 관련 API
+  - name: TabGroup
+    description: 탭 그룹 관련 API
 paths:
   /oauth/google:
     get:
@@ -73,6 +75,100 @@ paths:
       responses:
         200:
           description: 성공
+  /tab-group:
+    get:
+      description: 나의 탭 그룹 조회
+      tags:
+        - TabGroup
+      security:
+        - bearerAuth: [ ]
+      responses:
+        200:
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TabGroupDto"
+    post:
+      description: 탭 그룹 생성
+      tags:
+        - TabGroup
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/CreateTabGroupRequest"
+      responses:
+        "200":
+          description: 성공
+    delete:
+      description: 탭 그룹 삭제
+      tags:
+        - TabGroup
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteTabGroupRequest"
+      responses:
+        "200":
+          description: 성공
+        "404":
+          description: 해당하는 탭 그룹이 존재하지 않음
+  /tab-group/qr-code:
+    post:
+      description: 탭 그룹에 대한 QR 코드 생성
+      tags:
+        - TabGroup
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTabGroupQrCodeRequest"
+      responses:
+        "200":
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateTabGroupQrCodeResponse"
+        "404":
+          description: 해당하는 탭 그룹이 존재하지 않음
+  /tab-group/{id}:
+    get:
+      description: QR 코드로 탭 그룹 조회.
+        반드시 /tab-group/qr-code로 생성된 id여야 한다.
+      tags:
+        - TabGroup
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: QR 코드로 접근할 탭 그룹 id
+      responses:
+        "200":
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TabGroupDto"
+        "404":
+          description: 해당하는 탭 그룹이 존재하지 않음
 
 components:
   securitySchemes:
@@ -127,3 +223,136 @@ components:
         pinnedTabAllowed:
           type: boolean
           description: 고정된 탭 허용 여부
+    TabGroupDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 탭 그룹 id
+        secret:
+          type: string
+          description: 클라이언트에서 쿠키/세션을 암호화할 때 사용했던 시크릿
+        salt:
+          type: string
+          description: 클라이언트에서 쿠키/세션을 암호화할 때 사용했던 솔트
+        browserTabInfos:
+          type: array
+          items:
+            $ref: "#/components/schemas/BrowserTabInfoDto"
+          description: 탭 그룹에 포함된 탭 정보 목록
+      required:
+        - id
+        - secret
+        - salt
+        - browserTabInfos
+    BrowserTabInfoDto:
+      type: object
+      properties:
+        windowId:
+          type: string
+          description: 탭이 속한 브라우저 창의 id
+        groupId:
+          type: string
+          nullable: true
+          description: 브라우저의 탭 그룹 id. 브라우저마다 명칭이 다르거나 존재하지 않을 수도 있다.
+        tabIndex:
+          type: integer
+          description: 탭의 인덱스
+        title:
+          type: string
+          description: 탭의 제목
+        url:
+          type: string
+          format: uri
+          description: 탭의 URL
+        faviconUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: 파비콘 URL
+        incognito:
+          type: boolean
+          description: 탭의 시크릿 모드 여부
+        scrollPosition:
+          $ref: "#/components/schemas/RelativeRatio"
+        lastUsedAgent:
+          type: string
+          description: 탭에서 마지막으로 사용된 User-Agent
+        lastActiveAt:
+          type: integer
+          format: int64
+          description: 마지막으로 활성화된 타임스탬프 (epoch second)
+        session:
+          type: string
+          description: 암호화된 탭 세션
+        cookie:
+          type: string
+          description: 암호화된 탭 쿠키
+      required:
+        - windowId
+        - tabIndex
+        - title
+        - url
+        - incognito
+        - scrollPosition
+        - lastUsedAgent
+        - lastActiveAt
+        - session
+        - cookie
+    RelativeRatio:
+      type: object
+      properties:
+        x:
+          type: number
+          format: double
+          description: 스크롤 위치의 X 좌표 비율 (0 이상 1 이하)
+        y:
+          type: number
+          format: double
+          description: 스크롤 위치의 Y 좌표 비율 (0 이상 1 이하)
+      required:
+        - x
+        - y
+    CreateTabGroupRequest:
+      type: object
+      properties:
+        secret:
+          type: string
+          description: 클라이언트에서 쿠키/세션을 암호화할 때 사용했던 시크릿
+        salt:
+          type: string
+          description: 클라이언트에서 쿠키/세션을 암호화할 때 사용했던 솔트
+        browserTabInfos:
+          type: array
+          items:
+            $ref: "#/components/schemas/BrowserTabInfoDto"
+          description: 탭 그룹에 포함된 탭 정보 목록
+      required:
+        - secret
+        - salt
+        - browserTabInfos
+    DeleteTabGroupRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 삭제할 탭 그룹 id
+      required:
+        - id
+    CreateTabGroupQrCodeRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: QR 코드를 생성할 탭 그룹 id
+      required:
+        - id
+    CreateTabGroupQrCodeResponse:
+      type: object
+      properties:
+        path:
+          type: string
+          description: 탭 그룹 조회 path
+          example: /tab-group/abcd
+      required:
+        - path
