@@ -4,4 +4,6 @@ interface RefreshTokenRepository {
     suspend fun save(token: RefreshToken)
 
     suspend fun invalidateOnce(token: RefreshToken): Boolean
+
+    suspend fun invalidateAll(tokenId: TokenId)
 }

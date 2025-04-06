@@ -2,6 +2,7 @@ package com.example.adapter.mongodb
 
 import com.example.domain.token.RefreshToken
 import com.example.domain.token.RefreshTokenRepository
+import com.example.domain.token.TokenId
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
@@ -35,6 +36,15 @@ class MongoRefreshTokenRepository(
                 ),
                 Updates.set(RefreshTokenDocument.FIELD_STATUS, "INVALIDATED"),
             ).modifiedCount != 0L
+    }
+
+    override suspend fun invalidateAll(tokenId: TokenId) {
+        dao.deleteMany(
+            Filters.and(
+                Filters.eq(RefreshTokenDocument.FIELD_USER_ID, tokenId.userId.value),
+                Filters.eq(RefreshTokenDocument.FIELD_PAIRING_KEY, tokenId.pairingKey),
+            ),
+        )
     }
 
     private fun RefreshToken.toDocument() =

@@ -47,6 +47,7 @@ dependencies {
 
     implementation("io.arrow-kt:arrow-core:$arrow_version")
     implementation("org.sqids:sqids-kotlin:0.1.1")
+    implementation("com.rabbitmq:amqp-client:5.25.0")
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version") // 안쓰면 제거한다.
