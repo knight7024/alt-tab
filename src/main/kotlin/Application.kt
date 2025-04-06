@@ -10,6 +10,7 @@ import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
+import com.example.config.RabbitMqConfig
 import com.example.config.UrlConfig
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
@@ -82,6 +83,32 @@ internal fun Application.module() {
                 UrlConfig(
                     baseUrl = config.tryGetString("google.baseUrl")!!,
                 ),
+            rabbitMq =
+                RabbitMqConfig(
+                    server =
+                        RabbitMqConfig.ServerConfig(
+                            host = secretConfig.tryGetString("rabbitmq-server.host")!!,
+                            port = secretConfig.tryGetString("rabbitmq-server.port")!!.toInt(),
+                            virtualHost = secretConfig.tryGetString("rabbitmq-server.virtual-host")!!,
+                            user = secretConfig.tryGetString("rabbitmq-server.user")!!,
+                            password = secretConfig.tryGetString("rabbitmq-server.password")!!,
+                        ),
+                    consumers =
+                        RabbitMqConfig.Consumers(
+                            invalidateRefreshToken =
+                                RabbitMqConfig.ConsumerConfig(
+                                    queueName = secretConfig.tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.queue")!!,
+                                    concurrentConsumers =
+                                        secretConfig
+                                            .tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.concurrent-consumers")!!
+                                            .toInt(),
+                                    prefetchCount =
+                                        secretConfig
+                                            .tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.prefetch-count")!!
+                                            .toInt(),
+                                ),
+                        ),
+                ),
         )
 
     // dependency
@@ -98,7 +125,7 @@ internal fun Application.module() {
 
     val generateTabGroupId = GenerateTabGroupId(counterDao(appConfig.mongoCounter))
     val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup), generateTabGroupId)
-
+    
     // configure
     configureSecurity(
         oAuthGoogleConfig = appConfig.oAuthGoogle,

@@ -9,4 +9,5 @@ data class AppConfig(
     val mongoCounter: MongoConfig,
     val oAuthGoogle: OAuthConfig,
     val googleUrl: UrlConfig,
+    val rabbitMq: RabbitMqConfig,
 )
