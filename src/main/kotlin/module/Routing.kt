@@ -1,5 +1,6 @@
 package com.example.module
 
+import com.example.domain.SendAsyncMessage
 import com.example.domain.extension.StashSettingRepository
 import com.example.domain.extension.TabGroupRepository
 import com.example.domain.token.RefreshTokenRepository
@@ -21,6 +22,7 @@ internal fun Application.configureRouting(
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
     refreshTokenRepository: RefreshTokenRepository,
+    invalidateRefreshToken: SendAsyncMessage,
     tabGroupRepository: TabGroupRepository,
     clock: Clock,
 ) {
@@ -35,6 +37,7 @@ internal fun Application.configureRouting(
             tokenProvider = tokenProvider,
             tokenValidator = tokenValidator,
             refreshTokenRepository = refreshTokenRepository,
+            invalidateRefreshToken = invalidateRefreshToken,
         )
 
         stashSetting(

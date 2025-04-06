@@ -22,9 +22,7 @@ class MongoRefreshTokenRepository(
                 .find(
                     Filters.eq(RefreshTokenDocument.FIELD_VALUE, token.value),
                 ).first()
-        if (saved == null) {
-            return true
-        } else if (saved.status != null) {
+        if (saved == null || saved.status != null) {
             return false
         }
 

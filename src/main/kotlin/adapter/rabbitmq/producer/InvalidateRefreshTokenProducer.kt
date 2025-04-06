@@ -37,8 +37,7 @@ class InvalidateRefreshTokenProducer(
 
     init {
         producerScope.launch {
-            val producerTag = "producer-${config.consumers.invalidateRefreshToken.queueName}"
-            val connection = connectionFactory.newConnection(producerTag)
+            val connection = connectionFactory.newConnection()
             channel = AtomicReference(connection.createChannel())
         }
     }
