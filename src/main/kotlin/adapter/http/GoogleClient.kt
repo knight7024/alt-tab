@@ -1,4 +1,4 @@
-package com.example.adapter
+package com.example.adapter.http
 
 import com.example.domain.user.UserEmailRepository
 import io.ktor.client.HttpClient

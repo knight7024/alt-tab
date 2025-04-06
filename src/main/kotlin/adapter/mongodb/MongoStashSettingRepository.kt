@@ -1,4 +1,4 @@
-package com.example.adapter
+package com.example.adapter.mongodb
 
 import com.example.domain.extension.StashRule
 import com.example.domain.extension.StashSetting

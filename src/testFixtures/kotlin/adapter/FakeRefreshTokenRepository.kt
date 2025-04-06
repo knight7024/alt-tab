@@ -1,6 +1,6 @@
 package adapter
 
-import com.example.adapter.RefreshTokenDocument
+import com.example.adapter.mongodb.RefreshTokenDocument
 import com.example.domain.token.RefreshToken
 import com.example.domain.token.RefreshTokenRepository
 

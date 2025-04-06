@@ -1,4 +1,4 @@
-package com.example.adapter
+package com.example.adapter.mongodb
 
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters

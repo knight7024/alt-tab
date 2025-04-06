@@ -1,6 +1,6 @@
 package adapter
 
-import com.example.adapter.UserDocument
+import com.example.adapter.mongodb.UserDocument
 import com.example.domain.user.User
 import com.example.domain.user.UserId
 import com.example.domain.user.UserRepository

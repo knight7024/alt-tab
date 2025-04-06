@@ -1,11 +1,11 @@
 package com.example
 
-import com.example.adapter.GenerateTabGroupId
-import com.example.adapter.GoogleClient
-import com.example.adapter.MongoRefreshTokenRepository
-import com.example.adapter.MongoStashSettingRepository
-import com.example.adapter.MongoTabGroupRepository
-import com.example.adapter.MongoUserRepository
+import com.example.adapter.http.GoogleClient
+import com.example.adapter.mongodb.GenerateTabGroupId
+import com.example.adapter.mongodb.MongoRefreshTokenRepository
+import com.example.adapter.mongodb.MongoStashSettingRepository
+import com.example.adapter.mongodb.MongoTabGroupRepository
+import com.example.adapter.mongodb.MongoUserRepository
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig

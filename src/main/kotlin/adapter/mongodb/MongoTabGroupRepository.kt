@@ -1,4 +1,4 @@
-package com.example.adapter
+package com.example.adapter.mongodb
 
 import com.example.domain.extension.BrowserTabInfo
 import com.example.domain.extension.RelativeRatio

@@ -1,7 +1,7 @@
 package adapter
 
-import com.example.adapter.StashRuleDocument
-import com.example.adapter.StashSettingDocument
+import com.example.adapter.mongodb.StashRuleDocument
+import com.example.adapter.mongodb.StashSettingDocument
 import com.example.domain.extension.StashRule
 import com.example.domain.extension.StashSetting
 import com.example.domain.extension.StashSettingRepository
