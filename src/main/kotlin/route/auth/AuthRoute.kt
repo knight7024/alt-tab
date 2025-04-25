@@ -74,8 +74,11 @@ fun Routing.authorization(
                                 )
                                 return@post call.respond(HttpStatusCode.Unauthorized)
                             }
-                        }.onFailure {
-                            // TODO: logging
+                        }.onFailure { t ->
+                            call.application.environment.log.error(
+                                "error occurred while invalidating refresh token",
+                                t,
+                            )
                         }
 
                         val (accessToken, refreshToken) =
