@@ -8,13 +8,17 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.plugins.swagger.swaggerUI
+import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 
 internal fun Application.configureHTTP() {
     install(StatusPages) {
-        exception<Throwable> { call, _ ->
-            // TODO: logging
+        exception<Throwable> { call, t ->
+            call.application.environment.log.error(
+                "Unhandled exception on `${call.request.uri}`",
+                t,
+            )
             call.respond(HttpStatusCode.InternalServerError)
         }
     }
