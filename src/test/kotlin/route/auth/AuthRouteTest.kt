@@ -1,10 +1,12 @@
 package com.example.route.auth
 
+import com.example.adapter.rabbitmq.service.InvalidateRefreshTokenMessage
 import com.example.baseTestApplication
 import com.example.bootstrapService
 import com.example.clock
 import com.example.domain.token.AccessToken
 import com.example.domain.token.RefreshToken
+import com.example.invalidateRefreshTokenProducer
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -12,6 +14,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
+import io.mockk.coVerify
 import java.util.UUID
 
 class AuthRouteTest :
@@ -94,6 +97,14 @@ class AuthRouteTest :
                     }
 
                     abuserResponse.status shouldBe HttpStatusCode.Unauthorized
+                    coVerify {
+                        invalidateRefreshTokenProducer.invoke(
+                            InvalidateRefreshTokenMessage(
+                                accessToken.tokenId.userId.value,
+                                accessToken.tokenId.pairingKey,
+                            ),
+                        )
+                    }
                 }
             }
 
