@@ -14,10 +14,10 @@ import io.ktor.server.routing.routing
 
 internal fun Application.configureHTTP() {
     install(StatusPages) {
-        exception<Throwable> { call, t ->
+        exception<Throwable> { call, cause ->
             call.application.environment.log.error(
                 "Unhandled exception on `${call.request.uri}`",
-                t,
+                cause,
             )
             call.respond(HttpStatusCode.InternalServerError)
         }

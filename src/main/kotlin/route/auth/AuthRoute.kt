@@ -16,6 +16,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Routing
+import io.ktor.server.routing.application
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -58,32 +59,33 @@ fun Routing.authorization(
         val tokens = call.receive<TokenDto>()
         tokenValidator
             .validate(tokens.accessToken, tokens.refreshToken)
-            .onLeft {
-                when (it) {
+            .onLeft { error ->
+                when (error) {
                     is TokenValidator.Error.AccessTokenExpired -> {
                         // 발급보다 먼저 만료시켜야 토큰 탈취에 보다 안전하다.
                         // 에러가 발생해도 사용성에 문제 없는 편이 낫다.
                         runCatching {
-                            val stolen = !refreshTokenRepository.invalidateOnce(it.refreshToken)
+                            val stolen = !refreshTokenRepository.invalidateOnce(error.refreshToken)
                             if (stolen) {
+                                application.environment.log.warn("refresh token stolen: ${error.refreshToken.value}")
                                 invalidateRefreshToken.invoke(
                                     InvalidateRefreshTokenMessage(
-                                        userId = it.refreshToken.tokenId.userId.value,
-                                        pairingKey = it.refreshToken.tokenId.pairingKey,
+                                        userId = error.refreshToken.tokenId.userId.value,
+                                        pairingKey = error.refreshToken.tokenId.pairingKey,
                                     ),
                                 )
                                 return@post call.respond(HttpStatusCode.Unauthorized)
                             }
-                        }.onFailure { t ->
-                            call.application.environment.log.error(
+                        }.onFailure {
+                            application.environment.log.error(
                                 "error occurred while invalidating refresh token",
-                                t,
+                                it,
                             )
                         }
 
                         val (accessToken, refreshToken) =
                             tokenProvider
-                                .issueAll(it.refreshToken.tokenId)
+                                .issueAll(error.refreshToken.tokenId)
                                 .also { refreshTokenRepository.save(it.second) }
 
                         return@post call.respond(TokenDto(accessToken.value, refreshToken.value))
