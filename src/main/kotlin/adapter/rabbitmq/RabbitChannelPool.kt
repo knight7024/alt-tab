@@ -58,6 +58,7 @@ class RabbitChannelPool(
 
     override fun close() {
         pool.close()
+        connection.close()
     }
 
     companion object {
