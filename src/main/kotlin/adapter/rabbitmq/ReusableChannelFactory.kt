@@ -7,7 +7,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject
 import org.slf4j.LoggerFactory
 import java.util.function.Supplier
 
-class ReusableChannelFactory(
+internal class ReusableChannelFactory(
     private val channelSupplier: Supplier<Channel>,
 ) : BasePooledObjectFactory<Channel>() {
     private val logger = LoggerFactory.getLogger(javaClass)
