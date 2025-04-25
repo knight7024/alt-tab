@@ -6,6 +6,8 @@ import com.example.adapter.mongodb.MongoRefreshTokenRepository
 import com.example.adapter.mongodb.MongoStashSettingRepository
 import com.example.adapter.mongodb.MongoTabGroupRepository
 import com.example.adapter.mongodb.MongoUserRepository
+import com.example.adapter.rabbitmq.ChannelPoolConfig
+import com.example.adapter.rabbitmq.RabbitChannelPool
 import com.example.adapter.rabbitmq.consumer.InvalidateRefreshTokenConsumer
 import com.example.adapter.rabbitmq.producer.InvalidateRefreshTokenProducer
 import com.example.adapter.rabbitmq.service.InvalidateRefreshTokenService
@@ -27,12 +29,14 @@ import com.example.module.refreshTokenDao
 import com.example.module.stashSettingDao
 import com.example.module.tabGroupDao
 import com.example.module.userDao
+import com.rabbitmq.client.ConnectionFactory
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
 import io.ktor.server.netty.EngineMain
 import java.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 fun main(args: Array<String>) {
     EngineMain.main(args)
@@ -130,9 +134,33 @@ internal fun Application.module() {
     val generateTabGroupId = GenerateTabGroupId(counterDao(appConfig.mongoCounter))
     val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup), generateTabGroupId)
 
+    val rabbitChannelPool =
+        RabbitChannelPool(
+            connectionFactory =
+                ConnectionFactory().apply {
+                    host = appConfig.rabbitMq.server.host
+                    port = appConfig.rabbitMq.server.port
+                    virtualHost = appConfig.rabbitMq.server.virtualHost
+                    username = appConfig.rabbitMq.server.user
+                    password = appConfig.rabbitMq.server.password
+                    requestedHeartbeat = 60 // second
+                    connectionTimeout = 200 // second
+                    shutdownTimeout = 400 // second
+                    isAutomaticRecoveryEnabled = true
+                },
+            poolConfig = ChannelPoolConfig(maxWait = 300.milliseconds),
+        )
     val invalidateRefreshTokenConsumer =
-        InvalidateRefreshTokenConsumer(appConfig.rabbitMq, InvalidateRefreshTokenService(refreshTokenRepository))
-    val invalidateRefreshTokenProducer = InvalidateRefreshTokenProducer(appConfig.rabbitMq)
+        InvalidateRefreshTokenConsumer(
+            channelPool = rabbitChannelPool,
+            consumerConfig = appConfig.rabbitMq.consumers.invalidateRefreshToken,
+            handler = InvalidateRefreshTokenService(refreshTokenRepository),
+        )
+    val invalidateRefreshTokenProducer =
+        InvalidateRefreshTokenProducer(
+            channelPool = rabbitChannelPool,
+            consumerConfig = appConfig.rabbitMq.consumers.invalidateRefreshToken,
+        )
 
     // configure
     configureSecurity(
@@ -154,7 +182,9 @@ internal fun Application.module() {
     )
 
     monitor.subscribe(ApplicationStopped) {
+        invalidateRefreshTokenProducer.close()
         invalidateRefreshTokenConsumer.close()
+        rabbitChannelPool.close()
     }
 }
 
