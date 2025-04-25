@@ -1,15 +1,19 @@
 package com.example
 
-import com.example.adapter.GenerateTabGroupId
-import com.example.adapter.GoogleClient
-import com.example.adapter.MongoRefreshTokenRepository
-import com.example.adapter.MongoStashSettingRepository
-import com.example.adapter.MongoTabGroupRepository
-import com.example.adapter.MongoUserRepository
+import com.example.adapter.http.GoogleClient
+import com.example.adapter.mongodb.GenerateTabGroupId
+import com.example.adapter.mongodb.MongoRefreshTokenRepository
+import com.example.adapter.mongodb.MongoStashSettingRepository
+import com.example.adapter.mongodb.MongoTabGroupRepository
+import com.example.adapter.mongodb.MongoUserRepository
+import com.example.adapter.rabbitmq.consumer.InvalidateRefreshTokenConsumer
+import com.example.adapter.rabbitmq.producer.InvalidateRefreshTokenProducer
+import com.example.adapter.rabbitmq.service.InvalidateRefreshTokenService
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
 import com.example.config.MongoConfig
 import com.example.config.OAuthConfig
+import com.example.config.RabbitMqConfig
 import com.example.config.UrlConfig
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
@@ -24,6 +28,7 @@ import com.example.module.stashSettingDao
 import com.example.module.tabGroupDao
 import com.example.module.userDao
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
 import io.ktor.server.netty.EngineMain
@@ -82,6 +87,32 @@ internal fun Application.module() {
                 UrlConfig(
                     baseUrl = config.tryGetString("google.baseUrl")!!,
                 ),
+            rabbitMq =
+                RabbitMqConfig(
+                    server =
+                        RabbitMqConfig.ServerConfig(
+                            host = secretConfig.tryGetString("rabbitmq-server.host")!!,
+                            port = secretConfig.tryGetString("rabbitmq-server.port")!!.toInt(),
+                            virtualHost = secretConfig.tryGetString("rabbitmq-server.virtual-host")!!,
+                            user = secretConfig.tryGetString("rabbitmq-server.user")!!,
+                            password = secretConfig.tryGetString("rabbitmq-server.password")!!,
+                        ),
+                    consumers =
+                        RabbitMqConfig.Consumers(
+                            invalidateRefreshToken =
+                                RabbitMqConfig.ConsumerConfig(
+                                    queueName = secretConfig.tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.queue")!!,
+                                    concurrentConsumers =
+                                        secretConfig
+                                            .tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.concurrent-consumers")!!
+                                            .toInt(),
+                                    prefetchCount =
+                                        secretConfig
+                                            .tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.prefetch-count")!!
+                                            .toInt(),
+                                ),
+                        ),
+                ),
         )
 
     // dependency
@@ -99,6 +130,10 @@ internal fun Application.module() {
     val generateTabGroupId = GenerateTabGroupId(counterDao(appConfig.mongoCounter))
     val tabGroupRepository = MongoTabGroupRepository(tabGroupDao(appConfig.mongoTabGroup), generateTabGroupId)
 
+    val invalidateRefreshTokenConsumer =
+        InvalidateRefreshTokenConsumer(appConfig.rabbitMq, InvalidateRefreshTokenService(refreshTokenRepository))
+    val invalidateRefreshTokenProducer = InvalidateRefreshTokenProducer(appConfig.rabbitMq)
+
     // configure
     configureSecurity(
         oAuthGoogleConfig = appConfig.oAuthGoogle,
@@ -113,9 +148,14 @@ internal fun Application.module() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
+        invalidateRefreshToken = invalidateRefreshTokenProducer,
         tabGroupRepository = tabGroupRepository,
         clock = clock,
     )
+
+    monitor.subscribe(ApplicationStopped) {
+        invalidateRefreshTokenConsumer.close()
+    }
 }
 
 private val config = ApplicationConfig("application.conf")

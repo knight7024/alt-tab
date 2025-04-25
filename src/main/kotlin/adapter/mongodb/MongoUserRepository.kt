@@ -1,4 +1,4 @@
-package com.example.adapter
+package com.example.adapter.mongodb
 
 import com.example.domain.user.User
 import com.example.domain.user.UserId

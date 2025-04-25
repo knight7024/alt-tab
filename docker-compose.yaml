@@ -12,12 +12,24 @@ services:
 
   mongodb:
     image: "mongodb/mongodb-community-server:8.0.4-ubi9"
-    restart: unless-stopped
     container_name: "mongodb"
+    restart: unless-stopped
     ports:
       - "27017:27017"
     volumes:
       - ./data/mongodb:/data/db
+    networks:
+      - backend
+
+  rabbitmq:
+    image: rabbitmq:4.0.8-management-alpine
+    container_name: "rabbitmq"
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq
     networks:
       - backend
 

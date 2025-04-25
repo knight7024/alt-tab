@@ -1,10 +1,10 @@
 package com.example.module
 
-import com.example.adapter.CounterDocument
-import com.example.adapter.RefreshTokenDocument
-import com.example.adapter.StashSettingDocument
-import com.example.adapter.TabGroupDocument
-import com.example.adapter.UserDocument
+import com.example.adapter.mongodb.CounterDocument
+import com.example.adapter.mongodb.RefreshTokenDocument
+import com.example.adapter.mongodb.StashSettingDocument
+import com.example.adapter.mongodb.TabGroupDocument
+import com.example.adapter.mongodb.UserDocument
 import com.example.config.MongoConfig
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings

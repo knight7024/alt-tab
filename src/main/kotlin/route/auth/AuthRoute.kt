@@ -1,5 +1,7 @@
 package com.example.route.auth
 
+import com.example.adapter.rabbitmq.service.InvalidateRefreshTokenMessage
+import com.example.domain.SendAsyncMessage
 import com.example.domain.extension.StashSettingRepository
 import com.example.domain.token.RefreshTokenRepository
 import com.example.domain.token.TokenId
@@ -26,6 +28,7 @@ fun Routing.authorization(
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
     refreshTokenRepository: RefreshTokenRepository,
+    invalidateRefreshToken: SendAsyncMessage,
 ) {
     route("/oauth") {
         authenticate("auth-oauth-google") {
@@ -63,9 +66,16 @@ fun Routing.authorization(
                         runCatching {
                             val stolen = !refreshTokenRepository.invalidateOnce(it.refreshToken)
                             if (stolen) {
-                                // TODO: 연관된 모든 토큰 만료시켜야 한다.
+                                invalidateRefreshToken.invoke(
+                                    InvalidateRefreshTokenMessage(
+                                        userId = it.refreshToken.tokenId.userId.value,
+                                        pairingKey = it.refreshToken.tokenId.pairingKey,
+                                    ),
+                                )
                                 return@post call.respond(HttpStatusCode.Unauthorized)
                             }
+                        }.onFailure {
+                            // TODO: logging
                         }
 
                         val (accessToken, refreshToken) =
