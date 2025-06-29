@@ -6,13 +6,15 @@ import com.example.domain.SendAsyncMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class SendRabbitMqMessage(
     private val channelPool: RabbitChannelPool,
-) : SendAsyncMessage {
+) : SendAsyncMessage,
+    AutoCloseable {
     private val producerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override suspend fun invoke(message: AsyncMessage) =
@@ -24,10 +26,15 @@ class SendRabbitMqMessage(
                 )
             }
 
-            else -> throw IllegalArgumentException("Unknown message: ${message::class.simpleName}")
+            else -> {
+                throw IllegalArgumentException("Unknown message: ${message::class.simpleName}")
+            }
         }
 
-    private inline fun <reified T : AsyncMessage> publish(queueName: String, message: T) {
+    private inline fun <reified T : AsyncMessage> publish(
+        queueName: String,
+        message: T,
+    ) {
         producerScope.launch {
             channelPool.useChannel { channel ->
                 channel.basicPublish(
@@ -38,5 +45,9 @@ class SendRabbitMqMessage(
                 )
             }
         }
+    }
+
+    override fun close() {
+        producerScope.cancel()
     }
 }

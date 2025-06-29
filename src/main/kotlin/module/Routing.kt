@@ -22,7 +22,7 @@ internal fun Application.configureRouting(
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
     refreshTokenRepository: RefreshTokenRepository,
-    invalidateRefreshToken: SendAsyncMessage,
+    sendAsyncMessage: SendAsyncMessage,
     tabGroupRepository: TabGroupRepository,
     clock: Clock,
 ) {
@@ -37,7 +37,7 @@ internal fun Application.configureRouting(
             tokenProvider = tokenProvider,
             tokenValidator = tokenValidator,
             refreshTokenRepository = refreshTokenRepository,
-            invalidateRefreshToken = invalidateRefreshToken,
+            sendAsyncMessage = sendAsyncMessage,
         )
 
         stashSetting(

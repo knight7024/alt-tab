@@ -49,7 +49,7 @@ private fun Application.testModule() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
-        invalidateRefreshToken = invalidateRefreshTokenProducer,
+        sendAsyncMessage = invalidateRefreshTokenProducer,
         tabGroupRepository = tabGroupRepository,
         clock = clock,
     )

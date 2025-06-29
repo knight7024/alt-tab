@@ -8,8 +8,8 @@ import com.example.adapter.mongodb.MongoTabGroupRepository
 import com.example.adapter.mongodb.MongoUserRepository
 import com.example.adapter.rabbitmq.ChannelPoolConfig
 import com.example.adapter.rabbitmq.RabbitChannelPool
+import com.example.adapter.rabbitmq.SendRabbitMqMessage
 import com.example.adapter.rabbitmq.consumer.InvalidateRefreshTokenConsumer
-import com.example.adapter.rabbitmq.producer.InvalidateRefreshTokenProducer
 import com.example.adapter.rabbitmq.service.InvalidateRefreshTokenService
 import com.example.config.AppConfig
 import com.example.config.JwtConfig
@@ -155,16 +155,12 @@ internal fun Application.module() {
                 },
             poolConfig = ChannelPoolConfig(maxWait = 300.milliseconds),
         )
+    val sendRabbitMqMessage = SendRabbitMqMessage(rabbitChannelPool)
     val invalidateRefreshTokenConsumer =
         InvalidateRefreshTokenConsumer(
             channelPool = rabbitChannelPool,
             consumerConfig = appConfig.rabbitMq.consumers.invalidateRefreshToken,
             handler = InvalidateRefreshTokenService(refreshTokenRepository),
-        )
-    val invalidateRefreshTokenProducer =
-        InvalidateRefreshTokenProducer(
-            channelPool = rabbitChannelPool,
-            consumerConfig = appConfig.rabbitMq.consumers.invalidateRefreshToken,
         )
 
     // configure
@@ -181,14 +177,14 @@ internal fun Application.module() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
-        invalidateRefreshToken = invalidateRefreshTokenProducer,
+        sendAsyncMessage = sendRabbitMqMessage,
         tabGroupRepository = tabGroupRepository,
         clock = clock,
     )
 
     monitor.subscribe(ApplicationStopped) {
-        invalidateRefreshTokenProducer.close()
         invalidateRefreshTokenConsumer.close()
+        sendRabbitMqMessage.close()
         rabbitChannelPool.close()
     }
 }
