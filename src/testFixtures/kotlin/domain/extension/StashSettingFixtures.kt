@@ -23,7 +23,7 @@ object StashSettingFixtures {
     fun dummyStashRule() =
         StashRule(
             idleCondition = listOf("window", "visiblity", "idle").random(),
-            idleTimeout = Random.nextLong(10, 61).let { Duration.ofMinutes(it) },
+            idleTimeout = Random.nextLong(0, 61).let { Duration.ofMinutes(it) },
             ignoreUnloadedTab = Random.nextBoolean(),
             ignoreAudibleTab = Random.nextBoolean(),
             ignoreContainerTab = Random.nextBoolean(),

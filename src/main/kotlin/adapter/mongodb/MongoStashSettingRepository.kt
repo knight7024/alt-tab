@@ -139,7 +139,7 @@ data class StashRuleDocument(
         fun default() =
             StashRuleDocument(
                 idleCondition = "window",
-                idleTimeoutInMinutes = 60,
+                idleTimeoutInMinutes = 0,
                 ignoreUnloadedTab = false,
                 ignoreAudibleTab = false,
                 ignoreContainerTab = null,

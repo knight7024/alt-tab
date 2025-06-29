@@ -89,7 +89,7 @@ internal data class StashSettingDto(
         val allowPinnedTab: Boolean,
     ) {
         init {
-            require(idleTimeout in 10..60)
+            require(idleTimeout in 0..60)
         }
     }
 }
