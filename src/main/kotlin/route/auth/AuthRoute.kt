@@ -4,6 +4,7 @@ import com.example.adapter.rabbitmq.service.InvalidateRefreshTokenMessage
 import com.example.domain.SendAsyncMessage
 import com.example.domain.extension.StashSettingRepository
 import com.example.domain.token.RefreshTokenRepository
+import com.example.domain.token.RefreshTokenRepository.InvalidateOnceError
 import com.example.domain.token.TokenId
 import com.example.domain.token.TokenProvider
 import com.example.domain.token.TokenValidator
@@ -65,17 +66,26 @@ fun Routing.authorization(
                         // 발급보다 먼저 만료시켜야 토큰 탈취에 보다 안전하다.
                         // 에러가 발생해도 사용성에 문제 없는 편이 낫다.
                         runCatching {
-                            val stolen = !refreshTokenRepository.invalidateOnce(error.refreshToken)
-                            if (stolen) {
-                                application.environment.log.warn("refresh token stolen: ${error.refreshToken.value}")
-                                sendAsyncMessage(
-                                    InvalidateRefreshTokenMessage(
-                                        userId = error.refreshToken.tokenId.userId.value,
-                                        pairingKey = error.refreshToken.tokenId.pairingKey,
-                                    ),
-                                )
-                                return@post call.respond(HttpStatusCode.Unauthorized)
-                            }
+                            refreshTokenRepository
+                                .invalidateOnce(error.refreshToken)
+                                .onLeft {
+                                    when (it) {
+                                        InvalidateOnceError.Invalidated -> {
+                                            application.environment.log.warn("refresh token was stolen: ${error.refreshToken.value}")
+                                            sendAsyncMessage(
+                                                InvalidateRefreshTokenMessage(
+                                                    userId = error.refreshToken.tokenId.userId.value,
+                                                    pairingKey = error.refreshToken.tokenId.pairingKey,
+                                                ),
+                                            )
+                                            return@post call.respond(HttpStatusCode.Unauthorized)
+                                        }
+
+                                        InvalidateOnceError.Purged -> {
+                                            return@post call.respond(HttpStatusCode.Unauthorized)
+                                        }
+                                    }
+                                }
                         }.onFailure {
                             application.environment.log.error(
                                 "error occurred while invalidating refresh token",
