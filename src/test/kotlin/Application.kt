@@ -41,7 +41,7 @@ private fun Application.testModule() {
         tokenValidator = tokenValidator,
         userRepository = userRepository,
     )
-    configureHTTP()
+    configureHTTP(phase = Phase.DEV)
     configureSerialization()
     configureRouting(
         userAuthorizationService = userAuthorizationService,
