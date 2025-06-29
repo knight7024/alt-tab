@@ -37,9 +37,10 @@ class FakeStashSettingRepository : StashSettingRepository {
         StashRuleDocument(
             idleCondition = idleCondition,
             idleTimeoutInMinutes = idleTimeout.toMinutes().toInt(),
-            mutedTabIgnored = mutedTabIgnored,
-            containerTabIgnored = containerTabIgnored,
-            pinnedTabAllowed = pinnedTabAllowed,
+            ignoreUnloadedTab = ignoreUnloadedTab,
+            ignoreAudibleTab = ignoreAudibleTab,
+            ignoreContainerTab = ignoreContainerTab,
+            allowPinnedTab = allowPinnedTab,
         )
 
     private fun StashSettingDocument.toDomain() =
@@ -53,8 +54,9 @@ class FakeStashSettingRepository : StashSettingRepository {
         StashRule(
             idleCondition = idleCondition,
             idleTimeout = Duration.ofMinutes(idleTimeoutInMinutes.toLong()),
-            mutedTabIgnored = mutedTabIgnored,
-            containerTabIgnored = containerTabIgnored,
-            pinnedTabAllowed = pinnedTabAllowed,
+            ignoreUnloadedTab = ignoreUnloadedTab,
+            ignoreAudibleTab = ignoreAudibleTab,
+            ignoreContainerTab = ignoreContainerTab,
+            allowPinnedTab = allowPinnedTab,
         )
 }

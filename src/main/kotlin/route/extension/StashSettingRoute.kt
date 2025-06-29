@@ -57,18 +57,20 @@ internal fun StashRule.toDto() =
     StashSettingDto.StashRule(
         idleCondition = idleCondition,
         idleTimeout = idleTimeout.toMinutes().toInt(),
-        mutedTabIgnored = mutedTabIgnored,
-        containerTabIgnored = containerTabIgnored,
-        pinnedTabAllowed = pinnedTabAllowed,
+        ignoreUnloadedTab = ignoreUnloadedTab,
+        ignoreContainerTab = ignoreContainerTab,
+        allowPinnedTab = allowPinnedTab,
+        ignoreAudibleTab = ignoreAudibleTab,
     )
 
 private fun StashSettingDto.StashRule.toDomain() =
     StashRule(
         idleCondition = idleCondition,
         idleTimeout = Duration.ofMinutes(idleTimeout.toLong()),
-        mutedTabIgnored = mutedTabIgnored,
-        containerTabIgnored = containerTabIgnored,
-        pinnedTabAllowed = pinnedTabAllowed,
+        ignoreUnloadedTab = ignoreUnloadedTab,
+        ignoreContainerTab = ignoreContainerTab,
+        allowPinnedTab = allowPinnedTab,
+        ignoreAudibleTab = ignoreAudibleTab,
     )
 
 @VisibleForTesting
@@ -81,9 +83,10 @@ internal data class StashSettingDto(
     data class StashRule(
         val idleCondition: String,
         val idleTimeout: Int,
-        val mutedTabIgnored: Boolean,
-        val containerTabIgnored: Boolean?,
-        val pinnedTabAllowed: Boolean,
+        val ignoreUnloadedTab: Boolean,
+        val ignoreAudibleTab: Boolean,
+        val ignoreContainerTab: Boolean? = null,
+        val allowPinnedTab: Boolean,
     ) {
         init {
             require(idleTimeout in 10..60)
