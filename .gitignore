@@ -28,7 +28,6 @@ out/
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
-/dist/
 /nbdist/
 /.nb-gradle/
 
@@ -37,7 +36,7 @@ out/
 
 ### Secrets ###
 src/main/resources/secrets.conf
-conf/prod/.env
+dist/conf/prod/.env
 
 ### Docker ###
-conf/data
+dist/data
