@@ -48,11 +48,13 @@ class MongoStashSettingRepository(
             )
         }
 
-        dao
-            .updateOne(
-                Filters.eq(StashSettingDocument.FIELD_USER_ID, stashSetting.userId.value),
-                Updates.combine(*updateCandidates.toTypedArray()),
-            )
+        if (updateCandidates.isNotEmpty()) {
+            dao
+                .updateOne(
+                    Filters.eq(StashSettingDocument.FIELD_USER_ID, stashSetting.userId.value),
+                    Updates.combine(*updateCandidates.toTypedArray()),
+                )
+        }
     }
 
     override suspend fun find(userId: UserId): StashSetting =
