@@ -29,7 +29,7 @@ fun Routing.authorization(
     tokenProvider: TokenProvider,
     tokenValidator: TokenValidator,
     refreshTokenRepository: RefreshTokenRepository,
-    invalidateRefreshToken: SendAsyncMessage,
+    sendAsyncMessage: SendAsyncMessage,
 ) {
     route("/oauth") {
         authenticate("auth-oauth-google") {
@@ -68,7 +68,7 @@ fun Routing.authorization(
                             val stolen = !refreshTokenRepository.invalidateOnce(error.refreshToken)
                             if (stolen) {
                                 application.environment.log.warn("refresh token stolen: ${error.refreshToken.value}")
-                                invalidateRefreshToken.invoke(
+                                sendAsyncMessage(
                                     InvalidateRefreshTokenMessage(
                                         userId = error.refreshToken.tokenId.userId.value,
                                         pairingKey = error.refreshToken.tokenId.pairingKey,

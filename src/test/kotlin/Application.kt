@@ -49,7 +49,7 @@ private fun Application.testModule() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
-        invalidateRefreshToken = invalidateRefreshTokenProducer,
+        sendAsyncMessage = invalidateRefreshTokenProducer,
         tabGroupRepository = tabGroupRepository,
         clock = clock,
     )
@@ -120,7 +120,6 @@ private val appConfig =
                     RabbitMqConfig.Consumers(
                         invalidateRefreshToken =
                             RabbitMqConfig.ConsumerConfig(
-                                queueName = secretConfig.tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.queue")!!,
                                 concurrentConsumers =
                                     secretConfig
                                         .tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.concurrent-consumers")!!

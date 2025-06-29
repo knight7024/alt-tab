@@ -1,8 +1,6 @@
-package com.example.adapter.rabbitmq.producer
+package com.example.adapter.rabbitmq
 
-import com.example.adapter.rabbitmq.RabbitChannelPool
 import com.example.adapter.rabbitmq.service.InvalidateRefreshTokenMessage
-import com.example.config.RabbitMqConfig
 import com.example.domain.AsyncMessage
 import com.example.domain.SendAsyncMessage
 import kotlinx.coroutines.CoroutineScope
@@ -13,21 +11,37 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class InvalidateRefreshTokenProducer(
+class SendRabbitMqMessage(
     private val channelPool: RabbitChannelPool,
-    private val consumerConfig: RabbitMqConfig.ConsumerConfig,
 ) : SendAsyncMessage,
     AutoCloseable {
     private val producerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    override suspend fun invoke(message: AsyncMessage) {
+    override suspend fun invoke(message: AsyncMessage) =
+        when (message) {
+            is InvalidateRefreshTokenMessage -> {
+                publish<InvalidateRefreshTokenMessage>(
+                    queueName = QueueName.INVALIDATE_REFRESH_TOKENS,
+                    message = message,
+                )
+            }
+
+            else -> {
+                throw IllegalArgumentException("Unknown message: ${message::class.simpleName}")
+            }
+        }
+
+    private inline fun <reified T : AsyncMessage> publish(
+        queueName: String,
+        message: T,
+    ) {
         producerScope.launch {
             channelPool.useChannel { channel ->
                 channel.basicPublish(
-                    consumerConfig.queueName,
-                    consumerConfig.queueName,
+                    queueName,
+                    queueName,
                     null,
-                    Json.encodeToString(message as InvalidateRefreshTokenMessage).toByteArray(),
+                    Json.encodeToString(message).toByteArray(),
                 )
             }
         }

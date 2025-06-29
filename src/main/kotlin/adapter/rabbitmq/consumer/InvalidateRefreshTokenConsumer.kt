@@ -1,6 +1,7 @@
 package com.example.adapter.rabbitmq.consumer
 
 import com.example.adapter.rabbitmq.MessageHandler
+import com.example.adapter.rabbitmq.QueueName
 import com.example.adapter.rabbitmq.RabbitChannelPool
 import com.example.adapter.rabbitmq.service.InvalidateRefreshTokenMessage
 import com.example.config.RabbitMqConfig
@@ -21,13 +22,14 @@ class InvalidateRefreshTokenConsumer(
     private val consumerConfig: RabbitMqConfig.ConsumerConfig,
     private val handler: MessageHandler<InvalidateRefreshTokenMessage>,
 ) : AutoCloseable {
+    private val queueName = QueueName.INVALIDATE_REFRESH_TOKENS
     private val borrowedChannels = ConcurrentHashMap<String, Channel>()
     private val consumerScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
         consumerScope.launch {
             repeat(consumerConfig.concurrentConsumers) { consumerIndex ->
-                val consumerTag = "consumer-${consumerConfig.queueName}-$consumerIndex"
+                val consumerTag = "consumer-$queueName-$consumerIndex"
                 val channel = channelPool.borrowChannel()
                 borrowedChannels[consumerTag] = channel
                 channel.basicQos(consumerConfig.prefetchCount)
@@ -52,7 +54,7 @@ class InvalidateRefreshTokenConsumer(
                             }
                         }
                     }
-                channel.basicConsume(consumerConfig.queueName, false, consumerTag, consumer)
+                channel.basicConsume(queueName, false, consumerTag, consumer)
             }
         }
     }
