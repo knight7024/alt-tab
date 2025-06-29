@@ -39,4 +39,4 @@ src/main/resources/secrets.conf
 dist/conf/prod/.env
 
 ### Docker ###
-dist/data
+dist/conf/data
