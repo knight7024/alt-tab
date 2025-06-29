@@ -17,7 +17,6 @@ data class RabbitMqConfig(
     )
 
     data class ConsumerConfig(
-        val queueName: String,
         val concurrentConsumers: Int,
         val prefetchCount: Int,
     )

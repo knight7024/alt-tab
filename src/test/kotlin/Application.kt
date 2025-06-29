@@ -120,7 +120,6 @@ private val appConfig =
                     RabbitMqConfig.Consumers(
                         invalidateRefreshToken =
                             RabbitMqConfig.ConsumerConfig(
-                                queueName = secretConfig.tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.queue")!!,
                                 concurrentConsumers =
                                     secretConfig
                                         .tryGetString("rabbitmq-consumers.invalidate-refresh-tokens.concurrent-consumers")!!
