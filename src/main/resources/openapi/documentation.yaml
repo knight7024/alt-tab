@@ -201,8 +201,9 @@ components:
       required:
         - idleCondition
         - idleTimeout
-        - mutedTabIgnored
-        - pinnedTabAllowed
+        - ignoreUnloadedTab
+        - ignoreAudibleTab
+        - allowPinnedTab
       properties:
         idleCondition:
           type: string
@@ -211,14 +212,17 @@ components:
           type: integer
           format: int32
           description: 유휴 상태로 판단할 시간 (분)
-        mutedTabIgnored:
+        ignoreUnloadedTab:
           type: boolean
-          description: 음소거된 탭 무시 여부
-        containerTabIgnored:
+          description: 비활성화된 탭 무시 여부
+        ignoreAudibleTab:
+          type: boolean
+          description: 미디어 재생 중인 탭 무시 여부
+        ignoreContainerTab:
           type: boolean
           nullable: true
           description: 컨테이너 탭 무시 여부
-        pinnedTabAllowed:
+        allowPinnedTab:
           type: boolean
           description: 고정된 탭 허용 여부
     TabGroupDto:

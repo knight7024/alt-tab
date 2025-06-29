@@ -17,7 +17,8 @@ data class StashSetting(
 data class StashRule(
     val idleCondition: String,
     val idleTimeout: Duration,
-    val mutedTabIgnored: Boolean,
-    val containerTabIgnored: Boolean?,
-    val pinnedTabAllowed: Boolean,
+    val ignoreUnloadedTab: Boolean,
+    val ignoreAudibleTab: Boolean,
+    val ignoreContainerTab: Boolean?,
+    val allowPinnedTab: Boolean,
 )

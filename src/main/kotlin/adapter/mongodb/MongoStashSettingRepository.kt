@@ -48,11 +48,13 @@ class MongoStashSettingRepository(
             )
         }
 
-        dao
-            .updateOne(
-                Filters.eq(StashSettingDocument.FIELD_USER_ID, stashSetting.userId.value),
-                Updates.combine(*updateCandidates.toTypedArray()),
-            )
+        if (updateCandidates.isNotEmpty()) {
+            dao
+                .updateOne(
+                    Filters.eq(StashSettingDocument.FIELD_USER_ID, stashSetting.userId.value),
+                    Updates.combine(*updateCandidates.toTypedArray()),
+                )
+        }
     }
 
     override suspend fun find(userId: UserId): StashSetting =
@@ -73,9 +75,10 @@ class MongoStashSettingRepository(
         StashRuleDocument(
             idleCondition = idleCondition,
             idleTimeoutInMinutes = idleTimeout.toMinutes().toInt(),
-            mutedTabIgnored = mutedTabIgnored,
-            containerTabIgnored = containerTabIgnored,
-            pinnedTabAllowed = pinnedTabAllowed,
+            ignoreUnloadedTab = ignoreUnloadedTab,
+            ignoreAudibleTab = ignoreAudibleTab,
+            ignoreContainerTab = ignoreContainerTab,
+            allowPinnedTab = allowPinnedTab,
         )
 
     private fun StashSettingDocument.toDomain() =
@@ -89,9 +92,10 @@ class MongoStashSettingRepository(
         StashRule(
             idleCondition = idleCondition,
             idleTimeout = Duration.ofMinutes(idleTimeoutInMinutes.toLong()),
-            mutedTabIgnored = mutedTabIgnored,
-            containerTabIgnored = containerTabIgnored,
-            pinnedTabAllowed = pinnedTabAllowed,
+            ignoreUnloadedTab = ignoreUnloadedTab,
+            ignoreAudibleTab = ignoreAudibleTab,
+            ignoreContainerTab = ignoreContainerTab,
+            allowPinnedTab = allowPinnedTab,
         )
 }
 
@@ -117,27 +121,31 @@ data class StashRuleDocument(
     val idleCondition: String,
     @SerialName(FIELD_IDLE_TIMEOUT_IN_MINUTES)
     val idleTimeoutInMinutes: Int,
-    @SerialName(FIELD_MUTED_TAB_IGNORED)
-    val mutedTabIgnored: Boolean,
-    @SerialName(FIELD_CONTAINER_TAB_IGNORED)
-    val containerTabIgnored: Boolean?,
-    @SerialName(FIELD_PINNED_TAB_ALLOWED)
-    val pinnedTabAllowed: Boolean,
+    @SerialName(FIELD_IGNORE_UNLOADED_TAB)
+    val ignoreUnloadedTab: Boolean,
+    @SerialName(FIELD_IGNORE_AUDIBLE_TAB)
+    val ignoreAudibleTab: Boolean,
+    @SerialName(FIELD_IGNORE_CONTAINER_TAB)
+    val ignoreContainerTab: Boolean?,
+    @SerialName(FIELD_ALLOW_PINNED_TAB)
+    val allowPinnedTab: Boolean,
 ) {
     companion object {
         const val FIELD_IDLE_CONDITION = "idle_condition"
         const val FIELD_IDLE_TIMEOUT_IN_MINUTES = "idle_timeout_in_minutes"
-        const val FIELD_MUTED_TAB_IGNORED = "muted_tab_ignored"
-        const val FIELD_CONTAINER_TAB_IGNORED = "container_tab_ignored"
-        const val FIELD_PINNED_TAB_ALLOWED = "pinned_tab_allowed"
+        const val FIELD_IGNORE_UNLOADED_TAB = "ignore_unloaded_tab"
+        const val FIELD_IGNORE_AUDIBLE_TAB = "ignore_audible_tab"
+        const val FIELD_IGNORE_CONTAINER_TAB = "ignore_container_tab"
+        const val FIELD_ALLOW_PINNED_TAB = "allow_pinned_tab"
 
         fun default() =
             StashRuleDocument(
                 idleCondition = "window",
-                idleTimeoutInMinutes = 60,
-                mutedTabIgnored = false,
-                containerTabIgnored = false,
-                pinnedTabAllowed = false,
+                idleTimeoutInMinutes = 0,
+                ignoreUnloadedTab = false,
+                ignoreAudibleTab = false,
+                ignoreContainerTab = null,
+                allowPinnedTab = false,
             )
     }
 }
