@@ -1,0 +1,15 @@
+services:
+  alt-tab:
+    image: "knight7024/alt-tab:latest"
+    container_name: "alt-tab"
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - path: dev/.env
+        required: true
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - backend
