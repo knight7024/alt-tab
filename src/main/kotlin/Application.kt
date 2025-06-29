@@ -43,6 +43,11 @@ fun main(args: Array<String>) {
 }
 
 internal fun Application.module() {
+    val phase =
+        config
+            .property("app.phase")
+            .getString()
+            .let { Phase.valueOf(it.uppercase()) }
     // config
     val appConfig =
         AppConfig(
@@ -168,7 +173,7 @@ internal fun Application.module() {
         tokenValidator = tokenValidator,
         userRepository = userRepository,
     )
-    configureHTTP()
+    configureHTTP(phase = phase)
     configureSerialization()
     configureRouting(
         userAuthorizationService = userAuthorizationService,

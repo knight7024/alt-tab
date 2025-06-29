@@ -1,5 +1,6 @@
 package com.example.module
 
+import com.example.Phase
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -12,7 +13,7 @@ import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 
-internal fun Application.configureHTTP() {
+internal fun Application.configureHTTP(phase: Phase) {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             call.application.environment.log.error(
@@ -23,13 +24,21 @@ internal fun Application.configureHTTP() {
         }
     }
     install(CORS) {
+        allowNonSimpleContentTypes = true
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)
         allowMethod(HttpMethod.Delete)
-        allowMethod(HttpMethod.Patch)
         allowHeader(HttpHeaders.Authorization)
-        allowHeader("MyCustomHeader")
-        anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
+        allowHeader(HttpHeaders.UserAgent)
+        when (phase) {
+            Phase.DEV -> {
+                anyHost()
+            }
+
+            Phase.PROD -> {
+                // TODO: allow only verified extension id
+            }
+        }
     }
     routing {
         swaggerUI(path = "openapi")
