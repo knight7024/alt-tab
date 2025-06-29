@@ -49,7 +49,7 @@ private fun Application.testModule() {
         tokenProvider = tokenProvider,
         tokenValidator = tokenValidator,
         refreshTokenRepository = refreshTokenRepository,
-        sendAsyncMessage = invalidateRefreshTokenProducer,
+        sendAsyncMessage = sendAsyncMessage,
         tabGroupRepository = tabGroupRepository,
         clock = clock,
     )
@@ -148,7 +148,7 @@ internal val refreshTokenRepository = FakeRefreshTokenRepository()
 
 internal val tabGroupRepository = FakeTabGroupRepository()
 
-internal val invalidateRefreshTokenProducer = mockk<SendAsyncMessage>(relaxed = true)
+internal val sendAsyncMessage = mockk<SendAsyncMessage>(relaxed = true)
 
 internal val bootstrapService = BootstrapService(tokenProvider, userRepository, refreshTokenRepository, stashSettingRepository)
 

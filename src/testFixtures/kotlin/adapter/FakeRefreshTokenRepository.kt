@@ -17,16 +17,12 @@ class FakeRefreshTokenRepository : RefreshTokenRepository {
     }
 
     override suspend fun invalidateOnce(token: RefreshToken): Either<InvalidateOnceError, Unit> {
-        val saved = refreshTokens[token.value]
-        when {
-            // 탈취된 토큰으로 판단되어 이미 제거된 경우
-            saved == null -> return InvalidateOnceError.Purged.left()
-
-            // 재사용할 수 없는 토큰인 경우
-            saved.status != null -> return InvalidateOnceError.Invalidated.left()
+        val saved = refreshTokens[token.value] ?: return InvalidateOnceError.Purged.left()
+        if (saved.status != null) {
+            return InvalidateOnceError.Invalidated.left()
         }
 
-        refreshTokens[token.value] = saved!!.copy(status = "INVALIDATED")
+        refreshTokens[token.value] = saved.copy(status = "INVALIDATED")
 
         return Unit.right()
     }
